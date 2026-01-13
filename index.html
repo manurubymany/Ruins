@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Second Chance - Ruins of Destiny</title>
 <style>
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    RESET E ESTILOS GLOBAIS                     ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     * { 
         margin: 0; 
         padding: 0; 
@@ -15,103 +12,84 @@
     }
     
     body {
-        background: #000;                    /* Fundo totalmente preto */
-        font-family: 'Georgia', serif;       /* Fonte clássica/elegante */
-        color: #e0e0e0;                      /* Texto cinza claro */
-        overflow: hidden;                    /* Remove scroll */
-        user-select: none;                   /* Impede seleção de texto */
+        background: #000;
+        font-family: 'Georgia', serif;
+        color: #e0e0e0;
+        overflow: hidden;
+        user-select: none;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                     CONTAINER PRINCIPAL                        ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #game-container {
-        width: 100vw;                        /* Largura = viewport */
-        height: 100vh;                       /* Altura = viewport */
-        position: relative;                  /* Base para posicionamento absoluto */
+        width: 100vw;
+        height: 100vh;
+        position: relative;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                      CAMADA DE FUNDO                           ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #bg-layer {
         position: absolute;
-        inset: 0;                           /* Expande para preencher todo container */
-        z-index: 1;                         /* Atrás de tudo (menos overlay) */
-        background: #000;                   /* Fundo preto se imagem não carregar */
+        inset: 0;
+        z-index: 1;
+        background: #000;
     }
 
     #bg {
         width: 100%;
         height: 100%;
-        object-fit: cover;                  /* Preenchimento mantendo proporção */
+        object-fit: cover;
         display: block;
-        transition: opacity 0.6s ease-in-out; /* Transição suave ao trocar imagem */
+        transition: opacity 0.6s ease-in-out;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                   CAMADA DO PERSONAGEM (SPRITE)                ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #sprite-layer {
         position: absolute;
-        bottom: 0;                          /* Alinha ao fundo da tela */
+        bottom: 0;
         left: 50%;
-        transform: translateX(-50%);        /* Centraliza horizontalmente */
-        z-index: 3;                         /* Acima do fundo, abaixo da UI */
-        height: 80vh;                       /* CORRIGIDO: Reduzido de 85vh para 80vh */
-        max-width: 100%;                    /* Máximo de largura sem exceder */
-        pointer-events: none;               /* Cliques passam através dele */
+        transform: translateX(-50%);
+        z-index: 3;
+        height: 80vh;
+        max-width: 100%;
+        pointer-events: none;
         display: flex;
-        align-items: flex-end;              /* Alinha imagem ao fundo */
-        justify-content: center;            /* Centraliza horizontalmente */
+        align-items: flex-end;
+        justify-content: center;
     }
 
     #charImg {
-        height: 100%;                       /* Preenche altura do sprite-layer */
-        max-width: 90vw;                    /* CORRIGIDO: Volta ao max-width, não width 100% */
-        object-fit: contain;                /* Mostra imagem completa sem cortar */
-        transition: opacity 0.5s ease-in-out; /* Fade suave ao trocar personagem */
-        filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); /* Sombra ao redor */
+        height: 100%;
+        max-width: 90vw;
+        object-fit: contain;
+        transition: opacity 0.5s ease-in-out;
+        filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    CAMADA DE OVERLAY (ESCURECIMENTO)           ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #overlay {
         position: absolute;
-        inset: 0;                           /* Cobre tudo */
-        background: rgba(0,0,0,0.3);        /* Transparência leve sobre fundo */
-        z-index: 2;                         /* Entre fundo e personagem */
-        pointer-events: none;               /* Não interfere com cliques */
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 2;
+        pointer-events: none;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                      CAMADA DE INTERFACE (UI)                  ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #ui-layer {
         position: relative;
-        z-index: 10;                        /* Acima de tudo */
+        z-index: 10;
         width: 100%;
         height: 100vh;
         display: flex;
         flex-direction: column;
-        justify-content: flex-end;          /* Alinha conteúdo ao fundo */
+        justify-content: flex-end;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                         MENU PRINCIPAL                         ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #main-menu {
         position: fixed;
-        inset: 0;                           /* Ocupa tela inteira */
+        inset: 0;
         background: #000;
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 1000;                      /* Sobre qualquer outra coisa */
+        z-index: 1000;
     }
 
-    /* Anotação: ::before cria imagem de fundo do menu */
     #main-menu::before {
         content: '';
         position: absolute;
@@ -119,15 +97,13 @@
         background-image: url('assets/chars/login.png');
         background-size: cover;
         background-position: center;
-        opacity: 0.4;                       /* Imagem semi-transparente */
+        opacity: 0.4;
     }
 
-    /* Anotação: ::after cria gradiente radial para efeito vinheta */
     #main-menu::after {
         content: '';
         position: absolute;
         inset: 0;
-        /* Gradiente que escurece mais nas bordas */
         background: radial-gradient(
             ellipse at center, 
             transparent 0%, 
@@ -137,26 +113,21 @@
     }
 
     #main-menu.hidden { 
-        display: none;                      /* Esconde menu ao iniciar jogo */
+        display: none;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                      CONTEÚDO DO MENU                          ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     .menu-content {
         position: relative;
-        z-index: 1;                         /* Acima dos pseudo-elementos */
+        z-index: 1;
         text-align: center;
         padding: clamp(40px, 8vw, 60px) clamp(30px, 6vw, 50px);
-        /* Anotação: clamp = (mínimo, preferido, máximo) - responsivo */
-        max-width: min(500px, 90vw);        /* Máximo 500px ou 90% de tela */
-        background: rgba(0,0,0,0.85);       /* Fundo semi-opaco */
-        border: 3px solid #d4a574;          /* Borda dourada */
+        max-width: min(500px, 90vw);
+        background: rgba(0,0,0,0.85);
+        border: 3px solid #d4a574;
         border-radius: 8px;
-        box-shadow: 0 0 30px rgba(212,165,116,0.3); /* Brilho dourado */
+        box-shadow: 0 0 30px rgba(212,165,116,0.3);
     }
 
-    /* Anotação: Cantos superiores (decoração) */
     .menu-content::before,
     .menu-content::after {
         content: '';
@@ -169,18 +140,17 @@
     .menu-content::before {
         top: 15px;
         left: 15px;
-        border-right: none;                 /* Remove borda direita */
-        border-bottom: none;                /* Remove borda inferior */
+        border-right: none;
+        border-bottom: none;
     }
 
     .menu-content::after {
         top: 15px;
         right: 15px;
-        border-left: none;                  /* Remove borda esquerda */
+        border-left: none;
         border-bottom: none;
     }
 
-    /* Anotação: Cantos inferiores (decoração) */
     .menu-ornament-bottom {
         position: absolute;
         bottom: 15px;
@@ -191,8 +161,8 @@
 
     .menu-ornament-bottom-left {
         left: 15px;
-        border-right: none;                 /* Remove borda direita */
-        border-top: none;                   /* Remove borda superior */
+        border-right: none;
+        border-top: none;
     }
 
     .menu-ornament-bottom-right {
@@ -201,204 +171,193 @@
         border-top: none;
     }
 
-    /* Anotação: Título principal do jogo */
     .game-title {
         font-size: clamp(1.8em, 5vw, 2.5em);
         margin-bottom: 10px;
-        color: #d4a574;                     /* Dourado */
-        text-shadow: 0 0 20px rgba(212,165,116,0.5); /* Brilho ao redor */
+        color: #d4a574;
+        text-shadow: 0 0 20px rgba(212,165,116,0.5);
         font-weight: bold;
-        letter-spacing: 2px;                /* Espaço entre letras */
+        letter-spacing: 2px;
     }
 
     .subtitle {
         font-size: clamp(1em, 2.5vw, 1.2em);
         margin-bottom: 35px;
-        color: #b8935f;                     /* Dourado mais escuro */
+        color: #b8935f;
         font-style: italic;
     }
 
-    /* Anotação: Campo de entrada de nome */
+    /* CORRIGIDO: Caixa de nome se ajusta ao conteúdo */
     #playerName {
         padding: 15px 20px;
         border-radius: 6px;
         border: 2px solid #d4a574;
-        width: min(350px, 85%);             /* Máximo 350px ou 85% de tela */
-        margin-bottom: 25px;
-        background: rgba(0,0,0,0.6);        /* Fundo escuro semi-opaco */
+        max-width: min(350px, 85%);        /* Máximo, não width fixo */
+        width: auto;                        /* Se ajusta ao conteúdo */
+        margin: 0 auto 25px auto;           /* Centraliza */
+        background: rgba(0,0,0,0.6);
         color: #d4a574;
         text-align: center;
         font-size: clamp(0.95em, 2.5vw, 1.05em);
         font-family: 'Georgia', serif;
+        display: inline-block;              /* Faz a caixa envolver o texto */
     }
 
     #playerName:focus {
-        outline: none;                      /* Remove outline padrão */
-        border-color: #f5d899;              /* Borda fica mais clara */
-        background: rgba(0,0,0,0.8);       /* Fundo fica mais opaco */
-        box-shadow: 0 0 20px rgba(212,165,116,0.3); /* Brilho ao focar */
+        outline: none;
+        border-color: #f5d899;
+        background: rgba(0,0,0,0.8);
+        box-shadow: 0 0 20px rgba(212,165,116,0.3);
     }
 
     #playerName::placeholder {
-        color: rgba(212,165,116,0.5);      /* Texto placeholder semi-transparente */
+        color: rgba(212,165,116,0.5);
         font-style: italic;
     }
 
-    /* Anotação: Botão iniciar jogo */
     #startBtn {
         padding: 15px 60px;
-        background: linear-gradient(135deg, #8b6914, #d4a574, #8b6914); /* Gradiente dourado */
+        background: linear-gradient(135deg, #8b6914, #d4a574, #8b6914);
         border: 2px solid #d4a574;
         color: #000;
         font-weight: bold;
         cursor: pointer;
         border-radius: 6px;
         font-size: clamp(1em, 2.8vw, 1.15em);
-        text-transform: uppercase;         /* Texto em maiúsculas */
+        text-transform: uppercase;
         letter-spacing: 1.5px;
         font-family: 'Georgia', serif;
         box-shadow: 0 4px 15px rgba(212,165,116,0.4);
-        transition: all 0.3s;              /* Suaviza todas as mudanças */
+        transition: all 0.3s;
     }
 
     #startBtn:hover {
-        transform: translateY(-2px);       /* Sobe 2px ao passar mouse */
-        box-shadow: 0 6px 20px rgba(212,165,116,0.6); /* Sombra mais intensa */
-        background: linear-gradient(135deg, #a07825, #f5d899, #a07825); /* Gradiente mais claro */
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212,165,116,0.6);
+        background: linear-gradient(135deg, #a07825, #f5d899, #a07825);
     }
 
     .menu-footer {
         margin-top: 35px;
         font-size: clamp(0.7em, 1.8vw, 0.85em);
-        color: rgba(212,165,116,0.5);      /* Semi-transparente */
+        color: rgba(212,165,116,0.5);
         font-style: italic;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    CAIXA DE DIÁLOGO (TEXTBOX)                  ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #textbox {
-        width: min(92%, 900px);             /* Máximo 900px ou 92% de tela */
-        margin: 0 auto 15px auto;           /* Centraliza com espaço inferior */
+        width: 90%;
+        margin: 0 auto 20px auto;
         background: rgba(0,0,0,0.85);
         border: 2px solid #d4a574;
         border-radius: 8px;
-        padding: clamp(30px, 3vw, 40px) clamp(20px, 4vw, 35px); /* CORRIGIDO: Mais espaço */
+        padding: 20px 25px;
         box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 20px rgba(212,165,116,0.2);
-        min-height: clamp(100px, 14vh, 140px); /* CORRIGIDO: Altura mínima maior */
-        max-height: 25vh;                   /* Máximo 25% da viewport */
+        min-height: 120px;
+        max-height: 30vh;
         position: relative;
-        overflow-y: auto;                   /* Scroll se texto for muito longo */
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     #textbox.hidden { 
-        display: none;                      /* Esconde quando não há diálogo */
+        display: none;
     }
 
-    /* Anotação: Container do nome do personagem */
     .speaker-container {
         position: absolute;
-        top: -22px;                         /* CORRIGIDO: Fica acima da caixa */
+        top: -22px;
         left: 25px;
-        z-index: 12;                        /* Acima da caixa de texto */
+        z-index: 12;
     }
 
-    /* Anotação: Nome do personagem que está falando */
+    /* CORRIGIDO: Caixa do speaker se ajusta ao conteúdo */
     #speaker {
         background: linear-gradient(135deg, #8b6914, #d4a574);
-        padding: 8px 20px;                  /* CORRIGIDO: Mais espaço */
+        padding: 8px 20px;
         border-radius: 4px;
         border: 2px solid #d4a574;
         font-weight: bold;
         font-size: clamp(0.85em, 2.2vw, 1em);
         color: #000;
         box-shadow: 0 2px 8px rgba(212,165,116,0.3);
-        /* CORRIGIDO: Limita largura para evitar nome cortado */
-        max-width: calc(min(92%, 900px) - 60px);
-        overflow: hidden;
-        text-overflow: ellipsis;           /* "..." se muito longo */
-        white-space: nowrap;               /* Texto em uma linha */
+        max-width: 85%;                     /* Máximo para não sair da tela */
+        display: inline-block;              /* Faz a caixa envolver o texto */
+        white-space: nowrap;                /* Texto em uma linha */
     }
 
-    /* Anotação: Texto do diálogo */
     #text {
-        line-height: 1.7;                  /* Espaçamento entre linhas */
-        font-size: clamp(0.9em, 2.3vw, 1.1em);
-        word-wrap: break-word;             /* Quebra palavras longas */
-        white-space: pre-wrap;             /* Mantém quebras de linha */
+        line-height: 1.8;
+        font-size: 1em;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        margin: 0;
+        letter-spacing: 0.02em;
     }
 
     .text-container {
-        padding-right: 10px;               /* Espaço para scrollbar */
+        padding-right: 10px;
     }
 
-    /* Anotação: Indicador visual de que pode clicar */
     .next-indicator {
         position: absolute;
         bottom: 8px;
         right: 15px;
-        animation: bounce 1s infinite;    /* Animação de pulo */
+        animation: bounce 1s infinite;
         color: #d4a574;
     }
 
     @keyframes bounce {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); } /* Sobe 5px no meio */
+        50% { transform: translateY(-5px); }
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    CONTAINER DE ESCOLHAS                       ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     .choice-container {
         display: flex;
-        flex-direction: column;            /* Escolhas em coluna */
+        flex-direction: column;
         align-items: center;
-        gap: 10px;                         /* Espaço entre escolhas */
+        gap: 10px;
         margin-bottom: 15px;
         padding: 0 10px;
-        max-height: 30vh;                  /* Máximo 30% de altura */
-        overflow-y: auto;                  /* Scroll se muitas escolhas */
+        max-height: 30vh;
+        overflow-y: auto;
     }
 
-    /* Anotação: Botão de escolha individual */
     .choice {
         width: min(92%, 600px);
         background: rgba(0,0,0,0.75);
         color: #d4a574;
         padding: 13px 22px;
-        border: 2px solid #8b6914;        /* Borda dourada mais escura */
+        border: 2px solid #8b6914;
         border-radius: 6px;
         cursor: pointer;
         font-size: clamp(0.85em, 2.2vw, 0.95em);
-        transition: all 0.2s;              /* Transição rápida */
+        transition: all 0.2s;
         text-align: left;
         line-height: 1.4;
         white-space: normal;
-        word-wrap: break-word;             /* Quebra em múltiplas linhas */
+        word-wrap: break-word;
     }
 
     .choice:hover {
         background: linear-gradient(135deg, rgba(139,105,20,0.3), rgba(212,165,116,0.2));
         border-color: #d4a574;
-        transform: translateY(-2px);       /* Sobe ao passar mouse */
+        transform: translateY(-2px);
         box-shadow: 0 5px 18px rgba(212,165,116,0.3);
-        color: #f5d899;                    /* Texto fica mais claro */
+        color: #f5d899;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    BOTÕES DE CONTROLE                          ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     .game-controls {
         position: fixed;
-        bottom: 8px;                       /* 8px do fundo */
-        right: 8px;                        /* 8px da direita */
+        bottom: 8px;
+        right: 8px;
         display: flex;
-        gap: 6px;                          /* Espaço entre botões */
+        gap: 6px;
         z-index: 100;
     }
 
     .game-controls.hidden {
-        display: none;                     /* Esconde até jogo iniciar */
+        display: none;
     }
 
     .control-btn {
@@ -415,12 +374,9 @@
     .control-btn:hover {
         background: rgba(139,105,20,0.4);
         border-color: #d4a574;
-        transform: scale(1.05);            /* Aumenta 5% ao passar mouse */
+        transform: scale(1.05);
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    INDICADOR DE ROTA                           ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #route-indicator {
         position: absolute;
         top: 8px;
@@ -431,36 +387,33 @@
         border: 1.5px solid #8b6914;
         font-size: clamp(0.7em, 1.8vw, 0.85em);
         color: #d4a574;
-        opacity: 0;                        /* Invisível por padrão */
+        opacity: 0;
         transition: opacity 0.3s;
         z-index: 100;
     }
 
     #route-indicator.visible { 
-        opacity: 1;                        /* Fica visível quando uma rota ativa */
+        opacity: 1;
     }
 
-    /* ╔════════════════════════════════════════════════════════════════╗ */
-    /* ║                    NOTIFICAÇÕES (TOAST)                        ║ */
-    /* ╚════════════════════════════════════════════════════════════════╝ */
     #toast {
         position: fixed;
         top: 20px;
         left: 50%;
-        transform: translateX(-50%);       /* Centraliza horizontalmente */
-        background: rgba(15,15,15,0.95);   /* Quase preto mas semi-opaco */
+        transform: translateX(-50%);
+        background: rgba(15,15,15,0.95);
         color: #d4a574;
         padding: 15px 30px;
         border-radius: 8px;
         border: 1px solid rgba(212,165,116,0.3);
-        z-index: 1001;                     /* Acima de tudo */
-        opacity: 0;                        /* Invisível por padrão */
+        z-index: 1001;
+        opacity: 0;
         transition: opacity 0.3s;
-        pointer-events: none;              /* Não interfere com cliques */
+        pointer-events: none;
     }
 
     #toast.show { 
-        opacity: 1;                        /* Fica visível quando ativado */
+        opacity: 1;
     }
 </style>
 </head>
