@@ -4,70 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Second Chance - Ruins of Destiny</title>
+    
     <style>
+        /* Reseta margens padrão dos navegadores para termos controle total */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             background: #000;
             font-family: 'Georgia', serif;
             color: #e0e0e0;
-            overflow: hidden;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent; /* Remove flash de toque em mobile */
+            overflow: hidden; /* Impede barras de rolagem na página inteira */
+            user-select: none; /* Impede seleção de texto (melhora a sensação de "app") */
+            -webkit-tap-highlight-color: transparent; /* Remove flash azul ao tocar em botões no mobile */
         }
 
-        /* --- LAYOUT GERAL --- */
+        /* --- LAYOUT GERAL (O container principal do jogo) --- */
         #game-container {
             width: 100vw;
             height: 100vh;
-            /* Suporte para altura real em mobile (barra de endereço) */
+            /* 'dvh' é uma medida moderna para corrigir altura em navegadores mobile com barra de endereço */
             height: 100dvh; 
-            position: relative;
+            position: relative; /* Permite posicionar filhos com 'absolute' */
         }
 
+        /* --- CAMADAS (LAYERS) --- 
+           O jogo é construído como um sanduíche: Fundo > Personagem > Interface */
+        
+        /* 1. Camada de Fundo (Cenário) */
         #bg-layer {
             position: absolute;
             inset: 0;
-            z-index: 1;
+            z-index: 1; /* Fica atrás de tudo */
             background: #000;
         }
 
         #bg {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* Garante que a imagem cubra a tela sem distorcer */
             display: block;
-            transition: opacity 0.6s ease-in-out;
+            transition: opacity 0.6s ease-in-out; /* Efeito suave de transição */
         }
 
+        /* 2. Camada de Sprite (Personagens) */
         #sprite-layer {
             position: absolute;
             bottom: 0;
             left: 50%;
-            transform: translateX(-50%);
-            z-index: 3;
-            height: 85vh;
-            pointer-events: none;
+            transform: translateX(-50%); /* Centraliza horizontalmente */
+            z-index: 3; /* Fica acima do fundo e do overlay escuro */
+            height: 85vh; /* Altura do personagem */
+            pointer-events: none; /* Permite clicar através do personagem */
             display: flex;
             align-items: flex-end;
             justify-content: center;
         }
 
+        /* Estilo da imagem do personagem */
         #charImg {
             height: 100%;
             max-width: 90vw;
             object-fit: contain;
-            opacity: 0;
+            opacity: 0; /* Começa invisível para fazer fade-in */
             visibility: hidden; 
             transition: opacity 0.5s ease-in-out, visibility 0.5s;
-            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); /* Sombra para destacar do fundo */
         }
+        #charImg.visible { opacity: 1; visibility: visible; }
 
-        #charImg.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        /* Camada Escura (Overlay) para facilitar leitura do texto sobre o fundo */
         #overlay {
             position: absolute;
             inset: 0;
@@ -76,18 +81,19 @@
             pointer-events: none;
         }
 
+        /* 3. Camada de Interface (UI) - Texto, Botões, Menus */
         #ui-layer {
             position: relative;
-            z-index: 10;
+            z-index: 10; /* Fica na frente de tudo */
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-end; /* Empurra o conteúdo para baixo */
             padding-bottom: 20px;
         }
 
-        /* --- MENU PRINCIPAL --- */
+        /* --- ESTILOS DO MENU PRINCIPAL (TELA DE LOGIN) --- */
         #main-menu {
             position: fixed;
             inset: 0;
@@ -95,98 +101,50 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 2000; /* Z-index altíssimo para cobrir o jogo */
         }
-
+        /* Imagem de fundo do menu com transparência */
         #main-menu::before {
-            content: '';
-            position: absolute;
-            inset: 0;
+            content: ''; position: absolute; inset: 0;
             background-image: url('assets/chars/login.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.4;
+            background-size: cover; background-position: center; opacity: 0.4;
         }
-
-        #main-menu::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.9) 100%);
-        }
-
         #main-menu.hidden { display: none; }
 
         .menu-content {
-            position: relative;
-            z-index: 1;
+            position: relative; z-index: 1;
             text-align: center;
-            padding: clamp(30px, 5vw, 60px);
+            padding: clamp(30px, 5vw, 60px); /* Padding responsivo */
             width: min(500px, 90vw);
             background: rgba(0,0,0,0.85);
-            border: 3px solid #d4a574;
+            border: 3px solid #d4a574; /* Cor dourada */
             border-radius: 8px;
             box-shadow: 0 0 30px rgba(212,165,116,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        .menu-content::before, .menu-content::after {
-            content: ''; position: absolute; width: 30px; height: 30px; border: 2px solid #d4a574;
-        }
-        .menu-content::before { top: 15px; left: 15px; border-right: none; border-bottom: none; }
-        .menu-content::after { top: 15px; right: 15px; border-left: none; border-bottom: none; }
-
+        /* Títulos e Inputs */
         .game-title {
-            font-size: clamp(1.8em, 6vw, 2.5em);
-            margin-bottom: 10px;
-            color: #d4a574;
-            text-shadow: 0 0 20px rgba(212,165,116,0.5);
-            font-weight: bold;
-            letter-spacing: 2px;
-            line-height: 1.1;
+            font-size: clamp(1.8em, 6vw, 2.5em); /* Fonte escala com a tela */
+            margin-bottom: 10px; color: #d4a574; font-weight: bold;
         }
-
-        .subtitle {
-            font-size: clamp(0.9em, 3vw, 1.2em);
-            margin-bottom: 30px;
-            color: #b8935f;
-            font-style: italic;
-        }
+        .subtitle { color: #b8935f; font-style: italic; margin-bottom: 30px; }
 
         #playerName {
-            padding: 15px;
-            border-radius: 6px;
-            border: 2px solid #d4a574;
-            width: 100%;
-            margin-bottom: 20px;
-            background: rgba(0,0,0,0.6);
-            color: #d4a574;
-            text-align: center;
-            font-size: 1.1em;
+            padding: 15px; border-radius: 6px; border: 2px solid #d4a574;
+            width: 100%; margin-bottom: 20px; background: rgba(0,0,0,0.6);
+            color: #d4a574; text-align: center; font-size: 1.1em;
         }
-        #playerName:focus { outline: none; border-color: #f5d899; background: rgba(0,0,0,0.8); }
 
         #startBtn {
-            padding: 15px 40px;
-            width: 100%;
+            padding: 15px 40px; width: 100%;
             background: linear-gradient(135deg, #8b6914, #d4a574, #8b6914);
-            border: 2px solid #d4a574;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 1.1em;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-family: 'Georgia', serif;
-            box-shadow: 0 4px 15px rgba(212,165,116,0.4);
-            transition: all 0.3s;
+            border: 2px solid #d4a574; color: #000; font-weight: bold;
+            cursor: pointer; border-radius: 6px; font-size: 1.1em;
+            text-transform: uppercase; transition: all 0.3s;
         }
-        #startBtn:active { transform: translateY(2px); }
 
-        /* --- CAIXA DE DIÁLOGO --- */
+        /* --- ESTILOS DA CAIXA DE DIÁLOGO --- */
         #textbox {
             width: min(95%, 900px);
             margin: 0 auto 10px auto;
@@ -194,276 +152,92 @@
             border: 2px solid #d4a574;
             border-radius: 8px;
             padding: 20px 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
             min-height: 130px;
             max-height: 30vh;
             position: relative;
-            overflow-y: auto;
-            /* Scroll suave */
-            scrollbar-width: thin;
-            scrollbar-color: #d4a574 rgba(0,0,0,0.5);
+            overflow-y: auto; /* Permite rolar se o texto for muito grande */
         }
         #textbox.hidden { display: none; }
 
+        /* Nome do falante (Caixinha acima do texto) */
         .speaker-container { position: absolute; top: -14px; left: 20px; z-index: 20; }
-        
         #speaker {
             background: linear-gradient(135deg, #8b6914, #d4a574);
-            padding: 4px 20px;
-            border-radius: 4px;
-            border: 2px solid #d4a574;
-            font-weight: bold;
-            color: #000;
-            font-size: 0.95em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            padding: 4px 20px; border-radius: 4px; border: 2px solid #d4a574;
+            font-weight: bold; color: #000; font-size: 0.95em;
         }
 
-        #text {
-            line-height: 1.6;
-            font-size: 1.1em;
-            margin-top: 10px;
-            white-space: pre-wrap;
-        }
-
+        /* Animação da setinha indicando próximo texto */
         .next-indicator {
             position: absolute; bottom: 10px; right: 15px;
-            animation: bounce 1s infinite; color: #d4a574;
-            font-size: 1.2em;
+            animation: bounce 1s infinite; color: #d4a574; font-size: 1.2em;
         }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        /* --- ESCOLHAS --- */
+        /* --- ESTILOS DAS ESCOLHAS (BOTÕES) --- */
         .choice-container {
             display: flex; flex-direction: column; align-items: center;
             gap: 12px; margin-bottom: 20px; padding: 0 10px;
-            max-height: 40vh; overflow-y: auto;
             width: 100%;
         }
-
         .choice {
             width: min(100%, 600px);
             background: rgba(0,0,0,0.85);
-            color: #d4a574;
-            padding: 15px 20px;
-            border: 2px solid #8b6914;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1.05em;
-            transition: all 0.2s;
-            text-align: left;
-            position: relative;
-            line-height: 1.4;
-        }
-        .choice:active { background: #d4a574; color: #000; transform: scale(0.98); }
-        
-        /* Desktop Hover */
-        @media (hover: hover) {
-            .choice:hover {
-                background: linear-gradient(135deg, rgba(139,105,20,0.3), rgba(212,165,116,0.2));
-                border-color: #d4a574; transform: translateY(-2px); color: #f5d899;
-            }
+            color: #d4a574; padding: 15px 20px;
+            border: 2px solid #8b6914; border-radius: 6px;
+            cursor: pointer; font-size: 1.05em; text-align: left;
         }
 
-        /* --- UI CONTROLS --- */
+        /* --- MODAL DE CONFIGURAÇÕES (ENGRENAGEM) --- */
         #settings-btn {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1001;
-            background: rgba(0,0,0,0.7);
-            border: 2px solid #d4a574;
-            color: #d4a574;
-            font-size: 1.5em;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(2px);
+            position: fixed; top: 15px; right: 15px; z-index: 1001;
+            background: rgba(0,0,0,0.7); border: 2px solid #d4a574;
+            color: #d4a574; width: 45px; height: 45px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
         }
-        #settings-btn.hidden { display: none; }
-
         #settings-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); /* Centraliza perfeitamente */
             width: min(400px, 90vw);
             background: rgba(15, 15, 15, 0.98);
-            border: 2px solid #d4a574;
-            border-radius: 10px;
-            padding: 25px;
-            z-index: 2500;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-            text-align: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
+            border: 2px solid #d4a574; border-radius: 10px;
+            padding: 25px; z-index: 2500;
+            display: flex; flex-direction: column; gap: 20px;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         #settings-modal.active { opacity: 1; pointer-events: all; }
 
-        #settings-modal h2 {
-            color: #d4a574;
-            margin-bottom: 5px;
-            font-family: 'Georgia', serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 1px solid #8b6914;
-            padding-bottom: 10px;
-            font-size: 1.5em;
-        }
-
-        .volume-control { display: flex; flex-direction: column; gap: 8px; text-align: left; }
-        .volume-control label { color: #b8935f; font-size: 0.95em; }
-        
-        .volume-control input[type="range"] {
-            width: 100%;
-            height: 6px;
-            background: #333;
-            border-radius: 5px;
-            accent-color: #d4a574;
-            cursor: pointer;
-        }
-
-        .settings-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .settings-btn-action {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid #d4a574;
-            color: #d4a574;
-            padding: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Georgia', serif;
-            font-size: 1em;
-            transition: background 0.2s;
-        }
-        .settings-btn-action:active { background: #d4a574; color: #000; }
-        
-        /* Botão de Reset estilo perigo */
+        /* Estilo do botão de Reset (Vermelho) */
         .btn-reset {
-            grid-column: span 2;
-            border-color: #d45d5d;
-            color: #d45d5d;
-            margin-top: 5px;
-        }
-        .btn-reset:active { background: #d45d5d; color: #fff; }
-
-        .close-settings {
-            background: transparent; border: none; color: #888;
-            cursor: pointer; margin-top: 10px; text-decoration: underline;
-            padding: 10px; font-size: 1em;
+            grid-column: span 2; border-color: #d45d5d; color: #d45d5d; margin-top: 5px;
         }
 
-        #route-indicator {
-            position: absolute;
-            top: 15px; left: 15px;
-            background: rgba(0,0,0,0.85);
-            padding: 8px 15px;
-            border-radius: 20px;
-            border: 1px solid #8b6914;
-            font-size: 0.8em;
-            color: #d4a574;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 100;
-            pointer-events: none;
-        }
-        #route-indicator.visible { opacity: 1; }
-
+        /* Toast (Mensagens flutuantes como "Jogo Salvo") */
         #toast {
             position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
             background: rgba(15,15,15,0.95); color: #d4a574;
-            padding: 12px 25px; border-radius: 30px;
-            border: 1px solid rgba(212,165,116,0.5);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            padding: 12px 25px; border-radius: 30px; border: 1px solid rgba(212,165,116,0.5);
             z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
-            font-size: 0.9em; text-align: center;
-            width: max-content; max-width: 80vw;
         }
         #toast.show { opacity: 1; top: 80px; }
 
-        /* --- MEDIA QUERIES PARA MOBILE --- */
+        /* --- RESPONSIVIDADE (CELULARES) --- 
+           Tudo aqui dentro só se aplica se a tela for menor que 768px */
         @media (max-width: 768px) {
-            /* Ajuste de Sprite */
-            #sprite-layer {
-                height: 65vh; /* Personagem menor para não ficar atrás do texto */
-                bottom: 10px;
-            }
-            
-            /* Ajuste do Texto */
-            #textbox {
-                margin-bottom: 5px;
-                padding: 15px 20px;
-                min-height: 140px; /* Garante altura para toque */
-                font-size: 0.95em; /* Fonte levemente menor para caber mais */
-            }
-            
-            #text {
-                font-size: 1.05em;
-                line-height: 1.5;
-            }
-
-            /* Botões de Escolha maiores para toque */
-            .choice {
-                padding: 15px;
-                font-size: 1em;
-            }
-
-            /* Título do Menu */
-            .game-title {
-                font-size: 2em;
-                margin-bottom: 5px;
-            }
-            
-            /* Ajustes do Modal */
-            #settings-modal {
-                width: 95vw;
-                padding: 20px;
-            }
-            
-            .settings-actions {
-                grid-template-columns: 1fr; /* Botões empilhados */
-            }
-            .btn-reset {
-                grid-column: span 1;
-            }
-
-            /* Indicador de Rota menor */
-            #route-indicator {
-                top: 10px; left: 10px;
-                padding: 5px 12px;
-                font-size: 0.75em;
-            }
-
-            /* Botão de engrenagem */
-            #settings-btn {
-                top: 10px; right: 10px;
-            }
-        }
-        
-        /* Ajuste para telas muito pequenas (iPhone SE etc) */
-        @media (max-height: 600px) {
-            #sprite-layer { height: 55vh; }
-            #textbox { min-height: 110px; max-height: 35vh; }
-            .menu-content { padding: 20px; }
-            .game-title { font-size: 1.8em; }
+            #sprite-layer { height: 65vh; bottom: 10px; } /* Personagem menor */
+            #textbox { font-size: 0.95em; min-height: 140px; } /* Texto ajustado */
+            .game-title { font-size: 2em; }
+            .choice { padding: 15px; font-size: 1em; } /* Botões maiores para dedo */
+            #settings-modal { width: 95vw; }
+            .settings-actions { grid-template-columns: 1fr; } /* Botões um embaixo do outro */
+            .btn-reset { grid-column: span 1; }
         }
     </style>
 </head>
 <body>
     <audio id="bgm" loop></audio>
     <audio id="sfx"></audio>
+    
     <div id="toast"></div>
 
     <button id="settings-btn" class="hidden" onclick="toggleSettings()">⚙️</button>
@@ -535,15 +309,17 @@
     </div>
 
     <script>
-    // --- ESTADO DO JOGO ---
+    // --- VARIÁVEIS DE ESTADO ---
+    // Estas variáveis guardam a memória de curto prazo do jogo
     let playerName = "";
-    let state = "menu";
-    let isTyping = false;
-    let currentRoute = "";
-    let affection = { lucien: 0, eryon: 0, kaiden: 0, aelion: 0 };
+    let state = "menu"; // Qual cena estamos?
+    let isTyping = false; // O texto está sendo digitado agora?
+    let currentRoute = ""; // Em qual rota estamos?
+    let affection = { lucien: 0, eryon: 0, kaiden: 0, aelion: 0 }; // Pontos de amor
     let isSettingsOpen = false;
 
-    // --- ELEMENTOS DO DOM ---
+    // --- CAPTURA DE ELEMENTOS DO HTML ---
+    // Cria atalhos para mexer nos elementos da tela
     const bgm = document.getElementById("bgm");
     const sfx = document.getElementById("sfx");
     const bgImg = document.getElementById("bg");
@@ -560,23 +336,24 @@
     const settingsBtn = document.getElementById("settings-btn");
     const settingsModal = document.getElementById("settings-modal");
 
-    // Inicializa volumes padrão
+    // Define volumes iniciais
     bgm.volume = 0.5;
     sfx.volume = 1.0;
 
-    // --- SISTEMA DE DIÁLOGO E EFEITOS ---
+    // --- EFEITO DE MÁQUINA DE ESCREVER ---
+    // Faz o texto aparecer letra por letra
     function typeText(element, text) {
         element.innerText = "";
         isTyping = true;
         let i = 0;
+        // Substitui "Eu" pelo nome do jogador dinamicamente
         const processedText = text.replace(/Eu/g, playerName || "Eu");
 
         function type() {
             if (i < processedText.length) {
                 element.innerText += processedText.charAt(i);
                 i++;
-                // Velocidade de digitação levemente mais rápida para mobile
-                setTimeout(type, 25);
+                setTimeout(type, 25); // Velocidade da digitação
             } else {
                 isTyping = false;
             }
@@ -584,16 +361,19 @@
         type();
     }
 
+    // --- SISTEMA DE ÁUDIO ---
+    // Toca música apenas se for diferente da atual
     function playMusic(filename) {
         if (!filename) return;
         const newSrc = "assets/audio/" + filename + ".mp3";
-        // Decodificação de URL para evitar recarregar a mesma música se tiver caracteres especiais
+        // decodeURIComponent evita recarregar se tiver espaços no nome do arquivo
         if (decodeURIComponent(bgm.getAttribute("src")).includes(filename)) return;
         
         bgm.src = newSrc;
         bgm.play().catch(e => console.log("Áudio bloqueado até interação"));
     }
 
+    // Ajusta volume via menu
     function updateVolume(type, value) {
         if (type === 'bgm') {
             bgm.volume = value;
@@ -602,54 +382,53 @@
         }
     }
 
-    function toggleSettings() {
-        isSettingsOpen = !isSettingsOpen;
-        if (isSettingsOpen) {
-            settingsModal.classList.add("active");
-        } else {
-            settingsModal.classList.remove("active");
-        }
-    }
-
+    // --- SISTEMA VISUAL (BACKGROUND E SPRITES) ---
+    
+    // Troca o fundo com efeito de fade
     function setBackground(filename) {
         if (!filename) return;
         
-        bgImg.style.opacity = "0";
+        bgImg.style.opacity = "0"; // Fica transparente
         setTimeout(() => {
             bgImg.src = "assets/chars/" + filename + ".png";
-            bgImg.onerror = () => { bgImg.src = ""; }; // Fallback
-            bgImg.onload = () => { bgImg.style.opacity = "1"; };
+            bgImg.onerror = () => { bgImg.src = ""; }; 
+            bgImg.onload = () => { bgImg.style.opacity = "1"; }; // Aparece suavemente
         }, 300);
     }
 
+    // Troca o personagem
     function setCharacter(filename) {
-        charImg.classList.remove("visible");
+        charImg.classList.remove("visible"); // Esconde o atual
 
         if (!filename) {
-            setTimeout(() => { charImg.src = ""; }, 500);
+            setTimeout(() => { charImg.src = ""; }, 500); // Se não tem personagem, limpa
             return;
         }
         
         setTimeout(() => {
             charImg.src = "assets/chars/" + filename + ".png";
+            // Se a imagem não existir, não mostra ícone de erro
             charImg.onerror = () => {
                 console.warn("Sprite ausente: " + filename);
                 charImg.classList.remove("visible"); 
             };
+            // Só mostra quando terminar de carregar
             charImg.onload = () => { 
                 charImg.classList.add("visible"); 
             };
         }, 250);
     }
 
+    // Atualiza a plaquinha "Rota: Lucien"
     function updateRoute(routeName) {
         if (routeName) {
             currentRoute = routeName;
-            routeDisplay.innerText = routeName; // Texto mais curto para mobile
+            routeDisplay.innerText = routeName;
             routeIndicator.classList.add("visible");
         }
     }
 
+    // Mostra mensagens temporárias ("Jogo Salvo!")
     function showToast(message) {
         const toast = document.getElementById("toast");
         toast.textContent = message;
@@ -657,34 +436,39 @@
         setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
-    // --- CONTROLE DE FLUXO ---
+    // --- NÚCLEO DO JOGO (ENGINE) ---
+
+    // Gera os botões de escolha
     function showChoices(choices) {
         choicesBox.innerHTML = "";
         choices.forEach(choice => {
             const btn = document.createElement("button");
             btn.className = "choice";
             btn.innerText = choice.text;
-            // Ontouchstart ajuda na responsividade do toque em mobile
             btn.onclick = (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Impede que o clique avance o texto
+                // Se a escolha dá pontos (affection), soma aqui
                 if (choice.affect) affection[choice.affect] += (choice.value || 0);
                 choicesBox.innerHTML = "";
-                loadScene(choice.next);
+                loadScene(choice.next); // Carrega próxima cena
             };
             choicesBox.appendChild(btn);
         });
     }
 
+    // FUNÇÃO PRINCIPAL: Carrega uma cena do banco de dados
     function loadScene(sceneId) {
         const scene = routes[sceneId];
         
+        // Segurança: Se a cena não existe, avisa no console
         if (!scene) {
             console.error("Cena não encontrada: " + sceneId);
             return;
         }
 
-        state = sceneId; 
+        state = sceneId; // Atualiza onde estamos
 
+        // Atualiza elementos se a cena pedir
         if (scene.route) updateRoute(scene.route);
         if (scene.music) playMusic(scene.music);
         if (scene.char !== undefined) setBackground(scene.char); 
@@ -696,9 +480,10 @@
             setCharacter(null);
         }
 
+        // Configura texto e falante
         if (scene.text) {
             speakerBox.innerText = scene.speaker || "";
-            // Se não tiver speaker, esconde a caixinha
+            // Se não tem nome (narrador), esconde a caixa do nome
             if (!scene.speaker) {
                 speakerBox.style.display = "none";
             } else {
@@ -711,6 +496,7 @@
 
         choicesBox.innerHTML = "";
         
+        // Verifica se tem escolhas ou se é fim de jogo
         if (scene.choices) {
             setTimeout(() => showChoices(scene.choices), 500);
         } else if (scene.end) {
@@ -721,8 +507,10 @@
         }
     }
 
-    // --- SAVE/LOAD/RESET ---
+    // --- SISTEMA DE SAVE / LOAD / RESET ---
+
     function saveGame() {
+        // Cria um objeto com tudo que precisa ser lembrado
         const saveData = {
             scene: state,
             affection: affection,
@@ -732,6 +520,7 @@
             sfxVol: sfx.volume,
             date: new Date().toLocaleString()
         };
+        // Salva no navegador do usuário
         localStorage.setItem("RUINS_SAVE", JSON.stringify(saveData));
         showToast("Jogo salvo com sucesso!");
         toggleSettings();
@@ -743,11 +532,13 @@
         
         try {
             const save = JSON.parse(data);
+            // Restaura as variáveis
             affection = save.affection;
             currentRoute = save.route;
             playerName = save.playerName;
             state = save.scene;
             
+            // Restaura volumes
             if (save.bgmVol !== undefined) {
                 bgm.volume = save.bgmVol;
                 document.getElementById("vol-music").value = save.bgmVol;
@@ -760,12 +551,13 @@
             if (currentRoute) updateRoute(currentRoute);
             nameInput.value = playerName;
             
+            // Esconde menu inicial e mostra botão de config
             mainMenu.classList.add("hidden");
             settingsBtn.classList.remove("hidden");
             
             if (isSettingsOpen) toggleSettings();
             
-            loadScene(save.scene);
+            loadScene(save.scene); // Carrega a cena onde parou
             showToast("Jogo carregado!");
         } catch (e) {
             console.error("Erro save", e);
@@ -773,15 +565,27 @@
         }
     }
 
-    // --- NOVA FUNÇÃO: RESETAR JOGO ---
+    // Apaga o save e recarrega a página
     function resetGame() {
         if(confirm("Tem certeza? Isso apagará seu save atual e reiniciará o jogo.")) {
             localStorage.removeItem("RUINS_SAVE");
-            location.reload(); // Recarrega a página para limpar a memória RAM e estados
+            location.reload(); 
         }
     }
 
-    // --- EVENT LISTENERS ---
+    // Abre/Fecha menu de configurações
+    function toggleSettings() {
+        isSettingsOpen = !isSettingsOpen;
+        if (isSettingsOpen) {
+            settingsModal.classList.add("active");
+        } else {
+            settingsModal.classList.remove("active");
+        }
+    }
+
+    // --- EVENTOS (CLIQUES) ---
+    
+    // Botão COMEÇAR
     startBtn.onclick = () => {
         if (!nameInput.value.trim()) {
             showToast("Digite seu nome!");
@@ -791,15 +595,15 @@
         mainMenu.classList.add("hidden");
         settingsBtn.classList.remove("hidden");
         
-        // Tenta tocar música se já estiver carregada
         if (bgm.src) bgm.play().catch(e=>{});
-        loadScene("cena1_1");
+        loadScene("cena1_1"); // Começa na primeira cena
     };
 
+    // Clique na tela para avançar texto
     document.addEventListener("click", (e) => {
-        if (isSettingsOpen) return;
+        if (isSettingsOpen) return; // Se menu aberto, não avança
 
-        // Ignora cliques em elementos de UI
+        // Se clicou em botões ou menu, não faz nada (deixa o botão agir)
         if (e.target.closest(".choice") || 
             e.target.closest("#settings-btn") || 
             e.target.closest("#settings-modal") || 
@@ -808,29 +612,58 @@
 
         const scene = routes[state];
         
-        // Avançar texto
+        // Se a cena tem um "next" e não é escolha nem fim, avança
         if (scene && scene.next && !scene.choices && !scene.end) {
             if (isTyping) {
-                // Se quiser pular a digitação, descomente a linha abaixo e ajuste a lógica de typeText
-                // isTyping = false; 
-                return; 
+                return; // Se estiver digitando, espera
             }
             loadScene(scene.next);
         }
     });
 
-    // --- DADOS DAS ROTAS ---
+    // --- BANCO DE DADOS DA HISTÓRIA ---
+    // Aqui fica todo o roteiro do jogo
     const routes = {
-        // (Mantive os mesmos dados originais, a lógica é idêntica)
-        cena1_1: { speaker: "Eu", text: "Hoje foi uma sexta-feira complicada. Muita demanda para entregar aquele projeto de sistema.", char: "escritório1", music: "escritório", next: "cena1_2" },
-        cena1_2: { speaker: "Eu", text: "Olho o relógio. Nossa, já são 18h00. Finalmente a hora de voltar para casa. Pego minha bolsa e desligo o computador.", char: "escritório2", next: "cena2_1" },
-        cena2_1: { speaker: "Eu", text: "Nossa, que gelo que está hoje. Que dor de cabeça... foi muito cansativo. Parece que minha cabeça vai explodir. Vou passar na farmácia do outro lado da avenida pegar um remédio.", char: "rua1", music: "chuva", next: "cena2_2" },
-        cena2_2: { speaker: "Eu", text: "Caiu um pingo de água no meu olho. Aii, que merda... começou a chover. Vou correr logo para a farmácia.", char: "rua2", next: "cena3_1" },
-        cena3_1: { speaker: "Eu", text: "Vou aproveitar e correr antes que o sinal feche. A chuva já engrossou, estou encharcado. Atravessando a avenida...", char: "acidente1", music: "o acidente", next: "cena3_2" },
+        // CENA INICIAL
+        cena1_1: { 
+            speaker: "Eu", 
+            text: "Hoje foi uma sexta-feira complicada. Muita demanda para entregar aquele projeto de sistema.", 
+            char: "escritório1", // Fundo
+            music: "escritório", // Música
+            next: "cena1_2" // Próxima cena
+        },
+        cena1_2: { 
+            speaker: "Eu", 
+            text: "Olho o relógio. Nossa, já são 18h00. Finalmente a hora de voltar para casa. Pego minha bolsa e desligo o computador.", 
+            char: "escritório2", 
+            next: "cena2_1" 
+        },
+        cena2_1: { 
+            speaker: "Eu", 
+            text: "Nossa, que gelo que está hoje. Que dor de cabeça... foi muito cansativo. Parece que minha cabeça vai explodir. Vou passar na farmácia do outro lado da avenida pegar um remédio.", 
+            char: "rua1", 
+            music: "chuva", 
+            next: "cena2_2" 
+        },
+        cena2_2: { 
+            speaker: "Eu", 
+            text: "Caiu um pingo de água no meu olho. Aii, que merda... começou a chover. Vou correr logo para a farmácia.", 
+            char: "rua2", 
+            next: "cena3_1" 
+        },
+        cena3_1: { 
+            speaker: "Eu", 
+            text: "Vou aproveitar e correr antes que o sinal feche. A chuva já engrossou, estou encharcado. Atravessando a avenida...", 
+            char: "acidente1", 
+            music: "o acidente", 
+            next: "cena3_2" 
+        },
+        // O ACIDENTE
         cena3_2: { speaker: "", text: "BAAAANG. Barulho de batida e chuva.", char: "acidente2", next: "cena3_3" },
         cena3_3: { speaker: "", text: "O mundo gira. O sangue. A dor.", char: "acidente3", next: "cena3_4" },
         cena3_4: { speaker: "", text: "Tudo fica escuro.", char: "acidente4", next: "cena4_1" },
         
+        // O LIMBO (ENCONTRO COM ALEIA)
         cena4_1: { speaker: "Eu", text: "Huum... o que está acontecendo? Não estou enxergando. Está tudo escuro. Alguém consegue me ouvir?", char: "vazio1", music: "menu", next: "cena4_2" },
         cena4_2: { speaker: "", text: "Uma luz surge ao longe, crescendo gradualmente.", char: "vazio2", next: "cena4_3" },
         cena4_3: { speaker: "", text: "Ela toma a forma de uma mulher.", char: "vazio3", sprite: "aleia_normal", next: "cena4_4" },
@@ -843,19 +676,26 @@
         cena4_9: { speaker: "Aleia", text: "Do outro lado do portão está sua próxima reencarnação. Lá você terá a chance de cumprir sua missão.", char: "vazio3", sprite: "aleia_normal", next: "cena4_10" },
         cena4_10: { speaker: "Eu", text: "O quê?! Espera, eu nem entendi ainda!", char: "vazio4", next: "cena5_1" },
         
+        // NOVO MUNDO (RUÍNAS)
         cena5_1: { speaker: "Eu", text: "Ah... que claro... está tudo embaçado.", char: "ruinas1", music: "passos na floresta", next: "cena5_2" },
         cena5_2: { speaker: "Eu", text: "Começo a enxergar ao redor. Que mulher estranha... não explicou nada. Será que tem reclamação aqui no céu? Rs. Bom, eu morro mas não perco a piada.", char: "ruinas2", next: "cena5_3" },
         cena5_3: { speaker: "Eu", text: "Acordei em meio a uma floresta. Um antigo palácio em ruínas, estátuas de deuses destruídas. Passo por um portão quebrado.", char: "ruinas5", next: "cena6_1" },
         cena6_1: { speaker: "Eu", text: "Começo a andar em meio às árvores mas parece estar escurecendo. Meus pés doem. Continuo andando por mais umas 2hrs e escuto o barulho de o que parece ser um rio. Chego até um rio. Bom, sempre dizem que onde tem agua deve ter vida. Será que eu devo descer o rio, qual caminho devo seguir?", char: "caminho2", next: "cena6_2" },
         
-        cena6_2: { speaker: "", text: "Qual será sua escolha?", char: "caminho2", choices: [
-            { text: "Seguir o rio, até a cidade", next: "lucien_1", affect: "lucien", value: 1 },
-            { text: "Ficar aqui e descansar nos pés da árvore", next: "eryon_1", affect: "eryon", value: 1 },
-            { text: "Entrar e seguir o caminho pela floresta", next: "kaiden_1", affect: "kaiden", value: 1 },
-            { text: "Voltar para as ruínas de onde vim", next: "aelion_1", affect: "aelion", value: 1 }
-        ]},
+        // A GRANDE ESCOLHA DE ROTA
+        cena6_2: { 
+            speaker: "", 
+            text: "Qual será sua escolha?", 
+            char: "caminho2", 
+            choices: [
+                { text: "Seguir o rio, até a cidade", next: "lucien_1", affect: "lucien", value: 1 },
+                { text: "Ficar aqui e descansar nos pés da árvore", next: "eryon_1", affect: "eryon", value: 1 },
+                { text: "Entrar e seguir o caminho pela floresta", next: "kaiden_1", affect: "kaiden", value: 1 },
+                { text: "Voltar para as ruínas de onde vim", next: "aelion_1", affect: "aelion", value: 1 }
+            ]
+        },
 
-        // ROTA LUCIEN
+        // --- ROTA LUCIEN (VAMPIRO/GÓTICO) ---
         lucien_1: { route: "Lucien", speaker: "Eu", text: "Caminho lentamente pela margem do rio. A água reflete a luz fraca da lua, ondulando como prata líquida. Meus pés doem, minhas roupas ainda estão úmidas da chuva.", char: "lucien1", music: "gótica do lucien", next: "lucien_2" },
         lucien_2: { speaker: "Eu", text: "O som da correnteza me acompanha por um tempo até que, entre as árvores, percebo algo diferente. Pedras alinhadas. Um caminho antigo, parcialmente tomado pelo musgo.", char: "lucien2", next: "lucien_3" },
         lucien_3: { speaker: "Eu", text: "Sigo por ele com cautela. Após alguns minutos, as árvores se abrem. Diante de mim, surge um castelo enorme, envolto por névoa e silêncio.", char: "lucien3", next: "lucien_4" },
@@ -916,7 +756,7 @@
         lucien_ending_2: { speaker: "Eu", text: "Eu corro. Pela porta, pela floresta, fugindo do castelo e do destino que me espera.", char: "lucien25", end: true, endText: "🩸 FIM DA ROTA LUCIEN - Liberdade Conquistada" },
         lucien_ending_3: { speaker: "Lucien", text: "Você recua. Lucien abaixa a mão, pacientemente. Esperarei pelo tempo que precisar.", char: "lucien20", end: true, endText: "🩸 FIM DA ROTA LUCIEN - Incerteza Permanece" },
 
-        // ROTA ERYON
+        // --- ROTA ERYON (ANJO/LUZ) ---
         eryon_1: { route: "Eryon", speaker: "Eu", text: "Vou descansar no pé da árvore. Amanhã eu caminho um pouco mais... Afinal, hoje não vai dar mais nada. Deito aos pés da grande árvore ancestral, abraçando meus próprios braços.", char: "eryon1", music: "trilha do aelion", next: "eryon_2" },
         eryon_2: { speaker: "Eu", text: "O frio da noite começa a incomodar. Fecho os olhos. O cansaço vence.", char: "eryon1", next: "eryon_3" },
         eryon_3: { speaker: "Estranho", text: "No meio do sono, algo muda. O frio desaparece. Meu corpo começa a esquentar, como se estivesse envolvido por uma manta invisível. Coitadinha... Mais um pouco e teria congelado.", char: "eryon2", next: "eryon_4" },
@@ -987,7 +827,7 @@
         eryon_final: { speaker: "Eryon", text: "É perfeito. Nos beijamos sob a árvore ancestral. A floresta floresce.", char: "eryon11", end: true, endText: "☀️ FIM DA ROTA ERYON - Obrigado por jogar!" },
         eryon_ending_early: { speaker: "Eryon", text: "Ele respeita seu medo e recua. Estarei aqui quando estiver pronta.", char: "eryon4", end: true, endText: "☀️ FIM DA ROTA ERYON - Medo Permanece" },
 
-        // ROTA KAIDEN
+        // --- ROTA KAIDEN (KITSUNE/TRICKSTER) ---
         kaiden_1: { route: "Kaiden", speaker: "Eu", text: "Entro mais fundo na floresta. As árvores ficam mais densas, os galhos se entrelaçam acima da minha cabeça, quase bloqueando a lua. Ótimo... Se eu morrer de novo, dessa vez vai ser comida por algum monstro da floresta.", char: "kaiden1", music: "mystical japanese", next: "kaiden_2" },
         kaiden_2: { speaker: "Eu", text: "O ar fica estranho. Silencioso demais. Dou mais alguns passos. Então— Risadas. Baixas. Próximas.", char: "kaiden1", next: "kaiden_3" },
         kaiden_3: { speaker: "Estranho", text: "Uma figura surge sentada tranquilamente em um galho de árvore à frente. Cabelos claros com tons avermelhados, olhos dourados brilhando no escuro, um sorriso divertido demais para aquele lugar. Atrás dele... caudas. Uma, duas... várias se movendo lentamente.", char: "kaiden2", sprite: "kaiden_arvore", next: "kaiden_4" },
@@ -1081,7 +921,7 @@
         kaiden_final: { speaker: "Kaiden", text: "Kaiden envolve-me com seus braços, suas caudas cobrindo-nos como manto protetor. Então seja minha... até o fim. Eu prometo proteger você... mesmo que isso signifique desafiar os Céus. Eu prometo... ficar com você. Ele me beija novamente. O mundo ao redor desaparece. Somente nós dois. Uma marca de ligação brilha entre nós – nossa assinatura proibida. A floresta se acalma. A lua brilha sobre nós, refletindo nas caudas de Kaiden. Nós quebramos regras, destruímos expectativas, desafiamos tudo... Mas estamos juntos. Mesmo que todos nos odeiem? Mesmo assim. Porque o que temos é mais forte que qualquer julgamento. As caudas dele se enrolam em volta da minha cintura, nos protegendo. O Ciclo dos deuses... agora não pode nos tocar. Nós somos a nossa própria lei.", char: "kaiden20", end: true, endText: "🦊 FIM DA ROTA KAIDEN - Obrigado por jogar!" },
         kaiden_ending_1: { speaker: "Kaiden", text: "Kaiden sorri, como se já esperasse por isso. Como desejar. Talvez nos encontremos novamente.", char: "kaiden6", end: true, endText: "🦊 FIM DA ROTA KAIDEN - Distância Mantida" },
 
-        // ROTA AELION
+        // --- ROTA AELION (ELF/REI) ---
         aelion_1: { route: "Aelion", speaker: "Eu", text: "Decido voltar para as ruínas de onde vim. O caminho é conhecido, mas ainda assim sinto a tensão de um mundo que mudou desde minha morte. Talvez aqui eu consiga me orientar melhor... É mais seguro, pelo menos.", char: "aelion1", music: "trilha do aelion", next: "aelion_2" },
         aelion_2: { speaker: "Eu", text: "As ruínas parecem silenciosas, mas há um calor reconfortante no ar, como se o lugar estivesse esperando por mim.", char: "aelion1", next: "aelion_3" },
         aelion_3: { speaker: "Eu", text: "Enquanto examino as ruínas, uma luz dourada surge entre as colunas destruídas.", char: "aelion2", next: "aelion_4" },
