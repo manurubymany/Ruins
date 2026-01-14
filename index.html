@@ -155,8 +155,14 @@
             min-height: 130px;
             max-height: 30vh;
             position: relative;
-            overflow-y: auto; /* Permite rolar se o texto for muito grande */
+            overflow-y: visible; /* Permite rolar se o texto for muito grande */
         }
+            /* ESPAÇO ENTRE AS PALAVRAS */
+        #text {
+            white-space: pre-wrap; /* Isso força o navegador a respeitar os espaços */
+            line-height: 1.5;      /* Melhora a leitura entre linhas */
+        }
+
         #textbox.hidden { display: none; }
 
         /* Nome do falante (Caixinha acima do texto) */
@@ -482,7 +488,21 @@
 
         // Configura texto e falante
         if (scene.text) {
-            speakerBox.innerText = scene.speaker || "";
+            // --- CÓDIGO NOVO COMEÇA AQUI ---
+            
+            // Pega o nome definido na cena
+            let nomeParaMostrar = scene.speaker;
+
+            // Se o nome na cena for "Eu", troca pelo nome que o jogador digitou
+            if (nomeParaMostrar === "Eu") {
+                nomeParaMostrar = playerName;
+            }
+
+            // Atualiza a caixinha na tela
+            speakerBox.innerText = nomeParaMostrar || "";
+
+            // --- CÓDIGO NOVO TERMINA AQUI ---
+
             // Se não tem nome (narrador), esconde a caixa do nome
             if (!scene.speaker) {
                 speakerBox.style.display = "none";
@@ -655,11 +675,10 @@
             speaker: "Eu", 
             text: "Vou aproveitar e correr antes que o sinal feche. A chuva já engrossou, estou encharcado. Atravessando a avenida...", 
             char: "acidente1", 
-            music: "o acidente", 
             next: "cena3_2" 
         },
         // O ACIDENTE
-        cena3_2: { speaker: "", text: "BAAAANG. Barulho de batida e chuva.", char: "acidente2", next: "cena3_3" },
+        cena3_2: { speaker: "", text: "BAAAANG. Barulho de batida e chuva.", char: "acidente2", music: "o acidente", next: "cena3_3" },
         cena3_3: { speaker: "", text: "O mundo gira. O sangue. A dor.", char: "acidente3", next: "cena3_4" },
         cena3_4: { speaker: "", text: "Tudo fica escuro.", char: "acidente4", next: "cena4_1" },
         
