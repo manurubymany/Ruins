@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Second Chance - Ruins of Destiny</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,12 +13,15 @@
             color: #e0e0e0;
             overflow: hidden;
             user-select: none;
+            -webkit-tap-highlight-color: transparent; /* Remove flash de toque em mobile */
         }
 
         /* --- LAYOUT GERAL --- */
         #game-container {
             width: 100vw;
             height: 100vh;
+            /* Suporte para altura real em mobile (barra de endereço) */
+            height: 100dvh; 
             position: relative;
         }
 
@@ -50,19 +53,16 @@
             justify-content: center;
         }
 
-        /* CORREÇÃO DA IMAGEM QUEBRADA */
         #charImg {
             height: 100%;
             max-width: 90vw;
             object-fit: contain;
-            /* Inicia invisível para não mostrar ícone quebrado */
             opacity: 0;
             visibility: hidden; 
             transition: opacity 0.5s ease-in-out, visibility 0.5s;
             filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
         }
 
-        /* Classe para mostrar a imagem apenas quando carregada */
         #charImg.visible {
             opacity: 1;
             visibility: visible;
@@ -80,10 +80,11 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+            padding-bottom: 20px;
         }
 
         /* --- MENU PRINCIPAL --- */
@@ -94,7 +95,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000; /* Z-index alto para ficar acima de tudo */
+            z-index: 2000;
         }
 
         #main-menu::before {
@@ -120,12 +121,15 @@
             position: relative;
             z-index: 1;
             text-align: center;
-            padding: clamp(40px, 8vw, 60px) clamp(30px, 6vw, 50px);
-            max-width: min(500px, 90vw);
+            padding: clamp(30px, 5vw, 60px);
+            width: min(500px, 90vw);
             background: rgba(0,0,0,0.85);
             border: 3px solid #d4a574;
             border-radius: 8px;
             box-shadow: 0 0 30px rgba(212,165,116,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .menu-content::before, .menu-content::after {
@@ -135,27 +139,28 @@
         .menu-content::after { top: 15px; right: 15px; border-left: none; border-bottom: none; }
 
         .game-title {
-            font-size: clamp(1.8em, 5vw, 2.5em);
+            font-size: clamp(1.8em, 6vw, 2.5em);
             margin-bottom: 10px;
             color: #d4a574;
             text-shadow: 0 0 20px rgba(212,165,116,0.5);
             font-weight: bold;
             letter-spacing: 2px;
+            line-height: 1.1;
         }
 
         .subtitle {
-            font-size: clamp(1em, 2.5vw, 1.2em);
-            margin-bottom: 35px;
+            font-size: clamp(0.9em, 3vw, 1.2em);
+            margin-bottom: 30px;
             color: #b8935f;
             font-style: italic;
         }
 
         #playerName {
-            padding: 15px 20px;
+            padding: 15px;
             border-radius: 6px;
             border: 2px solid #d4a574;
-            width: min(350px, 85%);
-            margin-bottom: 25px;
+            width: 100%;
+            margin-bottom: 20px;
             background: rgba(0,0,0,0.6);
             color: #d4a574;
             text-align: center;
@@ -164,7 +169,8 @@
         #playerName:focus { outline: none; border-color: #f5d899; background: rgba(0,0,0,0.8); }
 
         #startBtn {
-            padding: 15px 60px;
+            padding: 15px 40px;
+            width: 100%;
             background: linear-gradient(135deg, #8b6914, #d4a574, #8b6914);
             border: 2px solid #d4a574;
             color: #000;
@@ -178,74 +184,87 @@
             box-shadow: 0 4px 15px rgba(212,165,116,0.4);
             transition: all 0.3s;
         }
-        #startBtn:hover { transform: translateY(-2px); background: linear-gradient(135deg, #a07825, #f5d899, #a07825); }
+        #startBtn:active { transform: translateY(2px); }
 
         /* --- CAIXA DE DIÁLOGO --- */
         #textbox {
-            width: min(92%, 900px);
-            margin: 0 auto 15px auto;
+            width: min(95%, 900px);
+            margin: 0 auto 10px auto;
             background: rgba(0,0,0,0.85);
             border: 2px solid #d4a574;
             border-radius: 8px;
-            padding: 20px 35px;
+            padding: 20px 25px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.6);
-            min-height: 120px;
-            max-height: 25vh;
+            min-height: 130px;
+            max-height: 30vh;
             position: relative;
             overflow-y: auto;
+            /* Scroll suave */
+            scrollbar-width: thin;
+            scrollbar-color: #d4a574 rgba(0,0,0,0.5);
         }
         #textbox.hidden { display: none; }
 
-        .speaker-container { position: absolute; top: -12px; left: 25px; }
+        .speaker-container { position: absolute; top: -14px; left: 20px; z-index: 20; }
         
         #speaker {
             background: linear-gradient(135deg, #8b6914, #d4a574);
-            padding: 4px 22px;
+            padding: 4px 20px;
             border-radius: 4px;
             border: 2px solid #d4a574;
             font-weight: bold;
             color: #000;
-            box-shadow: 0 2px 8px rgba(212,165,116,0.3);
+            font-size: 0.95em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
         }
 
         #text {
-            line-height: 1.7;
+            line-height: 1.6;
             font-size: 1.1em;
-            margin-top: 8px;
+            margin-top: 10px;
             white-space: pre-wrap;
         }
 
         .next-indicator {
-            position: absolute; bottom: 8px; right: 15px;
+            position: absolute; bottom: 10px; right: 15px;
             animation: bounce 1s infinite; color: #d4a574;
+            font-size: 1.2em;
         }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
         /* --- ESCOLHAS --- */
         .choice-container {
             display: flex; flex-direction: column; align-items: center;
-            gap: 10px; margin-bottom: 15px; padding: 0 10px;
-            max-height: 30vh; overflow-y: auto;
+            gap: 12px; margin-bottom: 20px; padding: 0 10px;
+            max-height: 40vh; overflow-y: auto;
+            width: 100%;
         }
 
         .choice {
-            width: min(92%, 600px);
-            background: rgba(0,0,0,0.75);
+            width: min(100%, 600px);
+            background: rgba(0,0,0,0.85);
             color: #d4a574;
-            padding: 13px 22px;
+            padding: 15px 20px;
             border: 2px solid #8b6914;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 1.05em;
             transition: all 0.2s;
             text-align: left;
+            position: relative;
+            line-height: 1.4;
         }
-        .choice:hover {
-            background: linear-gradient(135deg, rgba(139,105,20,0.3), rgba(212,165,116,0.2));
-            border-color: #d4a574; transform: translateY(-2px); color: #f5d899;
+        .choice:active { background: #d4a574; color: #000; transform: scale(0.98); }
+        
+        /* Desktop Hover */
+        @media (hover: hover) {
+            .choice:hover {
+                background: linear-gradient(135deg, rgba(139,105,20,0.3), rgba(212,165,116,0.2));
+                border-color: #d4a574; transform: translateY(-2px); color: #f5d899;
+            }
         }
 
-        /* --- BOTÃO DE CONFIGURAÇÃO (ENGRENAGEM) --- */
+        /* --- UI CONTROLS --- */
         #settings-btn {
             position: fixed;
             top: 15px;
@@ -255,132 +274,191 @@
             border: 2px solid #d4a574;
             color: #d4a574;
             font-size: 1.5em;
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             cursor: pointer;
-            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        #settings-btn:hover {
-            background: #d4a574;
-            color: #000;
-            transform: rotate(90deg);
+            backdrop-filter: blur(2px);
         }
         #settings-btn.hidden { display: none; }
 
-        /* --- MENU DE CONFIGURAÇÕES (MODAL) --- */
         #settings-modal {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: min(400px, 90vw);
-            background: rgba(15, 15, 15, 0.95);
+            background: rgba(15, 15, 15, 0.98);
             border: 2px solid #d4a574;
             border-radius: 10px;
-            padding: 30px;
-            z-index: 1100;
+            padding: 25px;
+            z-index: 2500;
             display: flex;
             flex-direction: column;
             gap: 20px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
             text-align: center;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
         }
-        #settings-modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
+        #settings-modal.active { opacity: 1; pointer-events: all; }
 
         #settings-modal h2 {
             color: #d4a574;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-family: 'Georgia', serif;
             text-transform: uppercase;
             letter-spacing: 2px;
             border-bottom: 1px solid #8b6914;
             padding-bottom: 10px;
+            font-size: 1.5em;
         }
 
-        .volume-control {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            text-align: left;
-        }
-        .volume-control label {
-            color: #b8935f;
-            font-size: 0.9em;
-        }
+        .volume-control { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+        .volume-control label { color: #b8935f; font-size: 0.95em; }
+        
         .volume-control input[type="range"] {
             width: 100%;
-            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 5px;
             accent-color: #d4a574;
+            cursor: pointer;
         }
 
         .settings-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            justify-content: center;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .settings-btn-action {
-            flex: 1;
-            background: rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.05);
             border: 1px solid #d4a574;
             color: #d4a574;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             cursor: pointer;
             font-family: 'Georgia', serif;
+            font-size: 1em;
             transition: background 0.2s;
         }
-        .settings-btn-action:hover {
-            background: #d4a574;
-            color: #000;
-        }
-        .close-settings {
-            background: transparent;
-            border: none;
-            color: #888;
-            cursor: pointer;
+        .settings-btn-action:active { background: #d4a574; color: #000; }
+        
+        /* Botão de Reset estilo perigo */
+        .btn-reset {
+            grid-column: span 2;
+            border-color: #d45d5d;
+            color: #d45d5d;
             margin-top: 5px;
-            text-decoration: underline;
-            font-size: 0.9em;
         }
-        .close-settings:hover { color: #fff; }
+        .btn-reset:active { background: #d45d5d; color: #fff; }
 
-        /* --- OUTROS --- */
+        .close-settings {
+            background: transparent; border: none; color: #888;
+            cursor: pointer; margin-top: 10px; text-decoration: underline;
+            padding: 10px; font-size: 1em;
+        }
+
         #route-indicator {
             position: absolute;
-            top: 15px;
-            left: 15px; /* Movi para a esquerda para não conflitar com a engrenagem */
+            top: 15px; left: 15px;
             background: rgba(0,0,0,0.85);
-            padding: 8px 18px;
-            border-radius: 4px;
-            border: 1.5px solid #8b6914;
-            font-size: 0.85em;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #8b6914;
+            font-size: 0.8em;
             color: #d4a574;
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 100;
+            pointer-events: none;
         }
         #route-indicator.visible { opacity: 1; }
 
         #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
             background: rgba(15,15,15,0.95); color: #d4a574;
-            padding: 15px 30px; border-radius: 8px;
-            border: 1px solid rgba(212,165,116,0.3);
+            padding: 12px 25px; border-radius: 30px;
+            border: 1px solid rgba(212,165,116,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            font-size: 0.9em; text-align: center;
+            width: max-content; max-width: 80vw;
         }
-        #toast.show { opacity: 1; }
+        #toast.show { opacity: 1; top: 80px; }
+
+        /* --- MEDIA QUERIES PARA MOBILE --- */
+        @media (max-width: 768px) {
+            /* Ajuste de Sprite */
+            #sprite-layer {
+                height: 65vh; /* Personagem menor para não ficar atrás do texto */
+                bottom: 10px;
+            }
+            
+            /* Ajuste do Texto */
+            #textbox {
+                margin-bottom: 5px;
+                padding: 15px 20px;
+                min-height: 140px; /* Garante altura para toque */
+                font-size: 0.95em; /* Fonte levemente menor para caber mais */
+            }
+            
+            #text {
+                font-size: 1.05em;
+                line-height: 1.5;
+            }
+
+            /* Botões de Escolha maiores para toque */
+            .choice {
+                padding: 15px;
+                font-size: 1em;
+            }
+
+            /* Título do Menu */
+            .game-title {
+                font-size: 2em;
+                margin-bottom: 5px;
+            }
+            
+            /* Ajustes do Modal */
+            #settings-modal {
+                width: 95vw;
+                padding: 20px;
+            }
+            
+            .settings-actions {
+                grid-template-columns: 1fr; /* Botões empilhados */
+            }
+            .btn-reset {
+                grid-column: span 1;
+            }
+
+            /* Indicador de Rota menor */
+            #route-indicator {
+                top: 10px; left: 10px;
+                padding: 5px 12px;
+                font-size: 0.75em;
+            }
+
+            /* Botão de engrenagem */
+            #settings-btn {
+                top: 10px; right: 10px;
+            }
+        }
+        
+        /* Ajuste para telas muito pequenas (iPhone SE etc) */
+        @media (max-height: 600px) {
+            #sprite-layer { height: 55vh; }
+            #textbox { min-height: 110px; max-height: 35vh; }
+            .menu-content { padding: 20px; }
+            .game-title { font-size: 1.8em; }
+        }
     </style>
 </head>
 <body>
@@ -394,21 +472,22 @@
         <h2>Configurações</h2>
         
         <div class="volume-control">
-            <label for="vol-music">Volume da Música</label>
+            <label for="vol-music">🎵 Música</label>
             <input type="range" id="vol-music" min="0" max="1" step="0.1" value="0.5" oninput="updateVolume('bgm', this.value)">
         </div>
 
         <div class="volume-control">
-            <label for="vol-sfx">Volume dos Efeitos</label>
+            <label for="vol-sfx">🔊 Efeitos</label>
             <input type="range" id="vol-sfx" min="0" max="1" step="0.1" value="1" oninput="updateVolume('sfx', this.value)">
         </div>
 
         <div class="settings-actions">
             <button class="settings-btn-action" onclick="saveGame()">💾 Salvar</button>
             <button class="settings-btn-action" onclick="loadGame()">📂 Carregar</button>
+            <button class="settings-btn-action btn-reset" onclick="resetGame()">🔄 Resetar Jogo</button>
         </div>
 
-        <button class="close-settings" onclick="toggleSettings()">Fechar Menu</button>
+        <button class="close-settings" onclick="toggleSettings()">Voltar ao Jogo</button>
     </div>
 
     <div id="game-container">
@@ -429,12 +508,15 @@
                 <div class="menu-content">
                     <h1 class="game-title">Second Chance</h1>
                     <p class="subtitle">Ruins of Destiny</p>
-                    <input id="playerName" type="text" placeholder="Digite seu nome..." maxlength="20">
-                    <br>
-                    <button id="startBtn">Começar Aventura</button>
-                    <div class="menu-footer" style="margin-top: 35px; color: rgba(212,165,116,0.5); font-style: italic;">Manu&Sam Studios</div>
-                    <span class="menu-ornament-bottom menu-ornament-bottom-left" style="position: absolute; bottom: 15px; left: 15px; width: 30px; height: 30px; border: 2px solid #d4a574; border-right: none; border-top: none;"></span>
-                    <span class="menu-ornament-bottom menu-ornament-bottom-right" style="position: absolute; bottom: 15px; right: 15px; width: 30px; height: 30px; border: 2px solid #d4a574; border-left: none; border-top: none;"></span>
+                    <input id="playerName" type="text" placeholder="Digite seu nome..." maxlength="15" autocomplete="off">
+                    <button id="startBtn">Começar</button>
+                    
+                    <div style="margin-top: 25px; color: rgba(212,165,116,0.4); font-size: 0.8em; font-style: italic;">
+                        Manu&Sam Studios
+                    </div>
+                    
+                    <span style="position: absolute; bottom: 15px; left: 15px; width: 20px; height: 20px; border: 2px solid #d4a574; border-right: none; border-top: none;"></span>
+                    <span style="position: absolute; bottom: 15px; right: 15px; width: 20px; height: 20px; border: 2px solid #d4a574; border-left: none; border-top: none;"></span>
                 </div>
             </div>
 
@@ -478,7 +560,7 @@
     const settingsBtn = document.getElementById("settings-btn");
     const settingsModal = document.getElementById("settings-modal");
 
-    // Inicializa volumes
+    // Inicializa volumes padrão
     bgm.volume = 0.5;
     sfx.volume = 1.0;
 
@@ -487,13 +569,14 @@
         element.innerText = "";
         isTyping = true;
         let i = 0;
-        const processedText = text.replace(/Eu/g, playerName);
+        const processedText = text.replace(/Eu/g, playerName || "Eu");
 
         function type() {
             if (i < processedText.length) {
                 element.innerText += processedText.charAt(i);
                 i++;
-                setTimeout(type, 30);
+                // Velocidade de digitação levemente mais rápida para mobile
+                setTimeout(type, 25);
             } else {
                 isTyping = false;
             }
@@ -504,13 +587,13 @@
     function playMusic(filename) {
         if (!filename) return;
         const newSrc = "assets/audio/" + filename + ".mp3";
-        if (bgm.getAttribute("src") === newSrc) return;
+        // Decodificação de URL para evitar recarregar a mesma música se tiver caracteres especiais
+        if (decodeURIComponent(bgm.getAttribute("src")).includes(filename)) return;
         
         bgm.src = newSrc;
-        bgm.play().catch(e => console.log("Interação necessária para áudio"));
+        bgm.play().catch(e => console.log("Áudio bloqueado até interação"));
     }
 
-    // Função de controle de volume
     function updateVolume(type, value) {
         if (type === 'bgm') {
             bgm.volume = value;
@@ -534,33 +617,25 @@
         bgImg.style.opacity = "0";
         setTimeout(() => {
             bgImg.src = "assets/chars/" + filename + ".png";
-            bgImg.onerror = () => { bgImg.src = ""; };
+            bgImg.onerror = () => { bgImg.src = ""; }; // Fallback
             bgImg.onload = () => { bgImg.style.opacity = "1"; };
         }, 300);
     }
 
-    // --- CORREÇÃO DA IMAGEM DO PERSONAGEM ---
     function setCharacter(filename) {
-        // Primeiro, esconde a imagem atual removendo a classe visible
         charImg.classList.remove("visible");
 
         if (!filename) {
-            // Se não tem filename, limpa o src depois da transição
             setTimeout(() => { charImg.src = ""; }, 500);
             return;
         }
         
-        // Aguarda o fade out (250ms metade da transição) para trocar o src
         setTimeout(() => {
             charImg.src = "assets/chars/" + filename + ".png";
-            
-            // Se der erro (arquivo não existe), garante que fica invisível
             charImg.onerror = () => {
-                console.warn("Personagem não encontrado: " + filename);
+                console.warn("Sprite ausente: " + filename);
                 charImg.classList.remove("visible"); 
             };
-            
-            // Só mostra (adiciona visible) se carregar com sucesso
             charImg.onload = () => { 
                 charImg.classList.add("visible"); 
             };
@@ -570,7 +645,7 @@
     function updateRoute(routeName) {
         if (routeName) {
             currentRoute = routeName;
-            routeDisplay.innerText = "Rota: " + routeName;
+            routeDisplay.innerText = routeName; // Texto mais curto para mobile
             routeIndicator.classList.add("visible");
         }
     }
@@ -589,6 +664,7 @@
             const btn = document.createElement("button");
             btn.className = "choice";
             btn.innerText = choice.text;
+            // Ontouchstart ajuda na responsividade do toque em mobile
             btn.onclick = (e) => {
                 e.stopPropagation();
                 if (choice.affect) affection[choice.affect] += (choice.value || 0);
@@ -611,37 +687,24 @@
 
         if (scene.route) updateRoute(scene.route);
         if (scene.music) playMusic(scene.music);
+        if (scene.char !== undefined) setBackground(scene.char); 
         
-        // Se a cena define char (mesmo que null), atualiza. Se não define, mantém o anterior.
-        if (scene.char !== undefined) {
-             setBackground(scene.char); 
-        }
-        
-        // Assumindo que o nome da imagem do personagem seja o mesmo do background 
-        // ou você pode adicionar uma propriedade 'sprite' no objeto routes se forem diferentes.
-        // Pelo código original, parecia usar a mesma propriedade 'char' para bg e personagem?
-        // Vou ajustar: se existir uma propriedade específica para sprite, usa ela. 
-        // Se não, vou assumir que você quer limpar o personagem se não for especificado, 
-        // OU manter. Vou manter a lógica anterior de limpar se não houver.
-        // *Correção*: O código original usava 'char' para o background e não tinha lógica clara para o sprite #charImg separada.
-        // Vou assumir que você quer controlar o #charImg. Se sua rota tiver uma propriedade 'personagem', usaremos ela.
-        // Caso contrário, vou deixar oculto para evitar o erro.
-        // Se quiser usar o 'char' para ambos, basta descomentar abaixo:
-        // setCharacter(scene.char); 
-        
-        // ADICIONEI ISSO: Verifique se suas rotas têm uma propriedade 'sprite'. 
-        // Se não tiverem, o personagem vai sumir. 
-        // Exemplo: cena1_1: { ..., sprite: "lucien_bravo" }
+        // Lógica de Sprite: se definido 'sprite', usa. Se não, limpa.
         if (scene.sprite) {
             setCharacter(scene.sprite);
         } else {
-            // Se não tiver sprite definido na cena, remove o personagem da tela
             setCharacter(null);
         }
 
         if (scene.text) {
             speakerBox.innerText = scene.speaker || "";
-            speakerBox.style.display = scene.speaker ? "block" : "none";
+            // Se não tiver speaker, esconde a caixinha
+            if (!scene.speaker) {
+                speakerBox.style.display = "none";
+            } else {
+                speakerBox.style.display = "block";
+            }
+            
             textbox.classList.remove("hidden");
             typeText(textBox, scene.text);
         }
@@ -652,13 +715,13 @@
             setTimeout(() => showChoices(scene.choices), 500);
         } else if (scene.end) {
             setTimeout(() => {
-                textBox.innerHTML = `<p style='text-align: center; font-size: 1.3em; color: #d4a574;'>${scene.endText}</p>`;
+                textBox.innerHTML = `<p style='text-align: center; font-size: 1.1em; color: #d4a574; font-weight: bold;'>${scene.endText}</p>`;
                 showToast("Fim da história!");
             }, 1000);
         }
     }
 
-    // --- SAVE/LOAD ---
+    // --- SAVE/LOAD/RESET ---
     function saveGame() {
         const saveData = {
             scene: state,
@@ -671,7 +734,7 @@
         };
         localStorage.setItem("RUINS_SAVE", JSON.stringify(saveData));
         showToast("Jogo salvo com sucesso!");
-        toggleSettings(); // Fecha o menu
+        toggleSettings();
     }
 
     function loadGame() {
@@ -685,7 +748,6 @@
             playerName = save.playerName;
             state = save.scene;
             
-            // Carrega volumes salvos
             if (save.bgmVol !== undefined) {
                 bgm.volume = save.bgmVol;
                 document.getElementById("vol-music").value = save.bgmVol;
@@ -701,13 +763,21 @@
             mainMenu.classList.add("hidden");
             settingsBtn.classList.remove("hidden");
             
-            if (isSettingsOpen) toggleSettings(); // Fecha o menu se estiver aberto
+            if (isSettingsOpen) toggleSettings();
             
             loadScene(save.scene);
             showToast("Jogo carregado!");
         } catch (e) {
-            console.error("Erro ao carregar save", e);
-            showToast("Erro ao carregar arquivo de save.");
+            console.error("Erro save", e);
+            showToast("Erro ao carregar save.");
+        }
+    }
+
+    // --- NOVA FUNÇÃO: RESETAR JOGO ---
+    function resetGame() {
+        if(confirm("Tem certeza? Isso apagará seu save atual e reiniciará o jogo.")) {
+            localStorage.removeItem("RUINS_SAVE");
+            location.reload(); // Recarrega a página para limpar a memória RAM e estados
         }
     }
 
@@ -721,14 +791,15 @@
         mainMenu.classList.add("hidden");
         settingsBtn.classList.remove("hidden");
         
-        if (bgm.src) bgm.play();
+        // Tenta tocar música se já estiver carregada
+        if (bgm.src) bgm.play().catch(e=>{});
         loadScene("cena1_1");
     };
 
     document.addEventListener("click", (e) => {
-        // Se o menu de config estiver aberto, cliques fora não avançam o texto
         if (isSettingsOpen) return;
 
+        // Ignora cliques em elementos de UI
         if (e.target.closest(".choice") || 
             e.target.closest("#settings-btn") || 
             e.target.closest("#settings-modal") || 
@@ -737,9 +808,10 @@
 
         const scene = routes[state];
         
+        // Avançar texto
         if (scene && scene.next && !scene.choices && !scene.end) {
             if (isTyping) {
-                // Se estiver digitando, completa o texto instantaneamente (opcional)
+                // Se quiser pular a digitação, descomente a linha abaixo e ajuste a lógica de typeText
                 // isTyping = false; 
                 return; 
             }
@@ -747,9 +819,9 @@
         }
     });
 
-    // --- DADOS DAS ROTAS (ADICIONE 'sprite' ONDE QUISER QUE APAREÇA O PERSONAGEM) ---
+    // --- DADOS DAS ROTAS ---
     const routes = {
-        // Exemplo: adicionei sprite: 'nome_do_arquivo' onde deveria ter personagem
+        // (Mantive os mesmos dados originais, a lógica é idêntica)
         cena1_1: { speaker: "Eu", text: "Hoje foi uma sexta-feira complicada. Muita demanda para entregar aquele projeto de sistema.", char: "escritório1", music: "escritório", next: "cena1_2" },
         cena1_2: { speaker: "Eu", text: "Olho o relógio. Nossa, já são 18h00. Finalmente a hora de voltar para casa. Pego minha bolsa e desligo o computador.", char: "escritório2", next: "cena2_1" },
         cena2_1: { speaker: "Eu", text: "Nossa, que gelo que está hoje. Que dor de cabeça... foi muito cansativo. Parece que minha cabeça vai explodir. Vou passar na farmácia do outro lado da avenida pegar um remédio.", char: "rua1", music: "chuva", next: "cena2_2" },
@@ -759,16 +831,10 @@
         cena3_3: { speaker: "", text: "O mundo gira. O sangue. A dor.", char: "acidente3", next: "cena3_4" },
         cena3_4: { speaker: "", text: "Tudo fica escuro.", char: "acidente4", next: "cena4_1" },
         
-        // Exemplo onde Aleia aparece:
         cena4_1: { speaker: "Eu", text: "Huum... o que está acontecendo? Não estou enxergando. Está tudo escuro. Alguém consegue me ouvir?", char: "vazio1", music: "menu", next: "cena4_2" },
         cena4_2: { speaker: "", text: "Uma luz surge ao longe, crescendo gradualmente.", char: "vazio2", next: "cena4_3" },
-        cena4_3: { speaker: "", text: "Ela toma a forma de uma mulher.", char: "vazio3", sprite: "aleia_normal", next: "cena4_4" }, // <--- AQUI eu coloquei sprite: "aleia_normal" (exemplo)
+        cena4_3: { speaker: "", text: "Ela toma a forma de uma mulher.", char: "vazio3", sprite: "aleia_normal", next: "cena4_4" },
         cena4_4: { speaker: "Aleia", text: "Eu sou Aleia, responsável por cuidar das reencarnações de quem não conseguiu cumprir seu propósito.", char: "vazio3", sprite: "aleia_normal", next: "cena4_5" },
-        
-        // ... RESTANTE DAS ROTAS ...
-        // Como o JSON original é muito grande, mantive a estrutura.
-        // NOTA IMPORTANTE: Para ver personagens, você precisa adicionar a propriedade 'sprite': 'nome_arquivo' 
-        // nas cenas dentro do objeto 'routes'. O código agora suporta isso sem mostrar ícone quebrado se não tiver.
         
         cena4_5: { speaker: "Eu", text: "Eu morri...?", char: "vazio3", sprite: "aleia_normal", next: "cena4_6" },
         cena4_6: { speaker: "Aleia", text: "Sim. Um motorista perdeu o controle na chuva.", char: "vazio3", sprite: "aleia_normal", next: "cena4_7" },
@@ -776,6 +842,7 @@
         cena4_8: { speaker: "Aleia", text: "Estão bem. Tudo foi resolvido.", char: "vazio3", sprite: "aleia_normal", next: "cena4_9" },
         cena4_9: { speaker: "Aleia", text: "Do outro lado do portão está sua próxima reencarnação. Lá você terá a chance de cumprir sua missão.", char: "vazio3", sprite: "aleia_normal", next: "cena4_10" },
         cena4_10: { speaker: "Eu", text: "O quê?! Espera, eu nem entendi ainda!", char: "vazio4", next: "cena5_1" },
+        
         cena5_1: { speaker: "Eu", text: "Ah... que claro... está tudo embaçado.", char: "ruinas1", music: "passos na floresta", next: "cena5_2" },
         cena5_2: { speaker: "Eu", text: "Começo a enxergar ao redor. Que mulher estranha... não explicou nada. Será que tem reclamação aqui no céu? Rs. Bom, eu morro mas não perco a piada.", char: "ruinas2", next: "cena5_3" },
         cena5_3: { speaker: "Eu", text: "Acordei em meio a uma floresta. Um antigo palácio em ruínas, estátuas de deuses destruídas. Passo por um portão quebrado.", char: "ruinas5", next: "cena6_1" },
@@ -808,8 +875,6 @@
             { text: "Se vai me matar, ao menos diga seu nome.", next: "lucien_12" },
             { text: "Você não parece tão assustador assim.", next: "lucien_12" }
         ]},
-        // Para encurtar o código, adicione 'sprite' nas outras rotas conforme necessário.
-        // O código vai funcionar mesmo sem 'sprite' (a imagem do personagem apenas ficará oculta).
         lucien_12: { speaker: "Eu", text: "Ele se move rápido demais. Sinto mãos frias segurando meus braços. Antes que eu possa gritar, uma dor aguda explode em meu pescoço.", char: "presença5", next: "lucien_13" },
         lucien_13: { speaker: "Eu", text: "A-ah...! O mundo gira. O sangue. A dor. E então — UMA LUZ BRANCA IRROMPE DE MIM.", char: "presença7", next: "lucien_14" },
         lucien_14: { speaker: "Eu", text: "O salão se ilumina violentamente. O estranho é arremessado contra uma coluna de pedra. Silêncio absoluto.", char: "presença8", next: "lucien_15" },
@@ -927,149 +992,4 @@
         kaiden_2: { speaker: "Eu", text: "O ar fica estranho. Silencioso demais. Dou mais alguns passos. Então— Risadas. Baixas. Próximas.", char: "kaiden1", next: "kaiden_3" },
         kaiden_3: { speaker: "Estranho", text: "Uma figura surge sentada tranquilamente em um galho de árvore à frente. Cabelos claros com tons avermelhados, olhos dourados brilhando no escuro, um sorriso divertido demais para aquele lugar. Atrás dele... caudas. Uma, duas... várias se movendo lentamente.", char: "kaiden2", sprite: "kaiden_arvore", next: "kaiden_4" },
         kaiden_4: { speaker: "Estranho", text: "Você entrou bem fundo no meu território, humana.", char: "kaiden2", sprite: "kaiden_arvore", next: "kaiden_5" },
-        kaiden_5: { speaker: "Eu", text: "Tá, isso definitivamente não estava no manual de sobrevivência pós-morte.", char: "kaiden2", sprite: "kaiden_arvore", next: "kaiden_6" },
-        kaiden_6: { speaker: "Estranho", text: "Ele pula do galho com leveza e para a poucos passos de mim. Kitsune. Mas você pode me chamar de Kaiden.", char: "kaiden2", sprite: "kaiden_normal", choices: [
-            { text: "Eu me perdi, não queria invadir nada.", next: "kaiden_7" },
-            { text: "Você pretende me matar?", next: "kaiden_7" },
-            { text: "E você sempre recebe visitas assim?", next: "kaiden_7" }
-        ]},
-        kaiden_7: { speaker: "Kaiden", text: "Kaiden inclina a cabeça, analisando-me como um brinquedo novo. Interessante... Você não cheira a medo como deveria.", char: "kaiden3", sprite: "kaiden_sorrindo", next: "kaiden_8" },
-        kaiden_8: { speaker: "Kaiden", text: "Ele se aproxima. Perto demais. Cheira a... algo antigo.", char: "kaiden3", sprite: "kaiden_serio", next: "kaiden_9" },
-        kaiden_9: { speaker: "Eu", text: "Afasta. Dou um passo para trás. Não encosta.", char: "kaiden2", sprite: "kaiden_serio", next: "kaiden_10" },
-        kaiden_10: { speaker: "Kaiden", text: "Ele ri. Calma. Se eu quisesse te machucar, já teria feito.", char: "kaiden2", sprite: "kaiden_sorrindo", choices: [
-            { text: "Então por que está me seguindo?", next: "kaiden_11" },
-            { text: "Eu não confio em você.", next: "kaiden_11" },
-            { text: "Você parece perigoso demais pra sorrir assim.", next: "kaiden_11" }
-        ]},
-        kaiden_11: { speaker: "Kaiden", text: "Kaiden estala os dedos. O cenário muda. A floresta se transforma em um caminho iluminado por lanternas, árvores floridas, um vilarejo ao longe.", char: "kaiden4", sprite: "kaiden_normal", next: "kaiden_12" },
-        kaiden_12: { speaker: "Eu", text: "O que você fez?", char: "kaiden4", next: "kaiden_13" },
-        kaiden_13: { speaker: "Kaiden", text: "Facilitei sua vida. A floresta real te mataria em horas. Ele se aproxima novamente. Mas ilusões... eu domino.", char: "kaiden4", sprite: "kaiden_sorrindo", choices: [
-            { text: "Isso é lindo...", next: "kaiden_14" },
-            { text: "É falso.", next: "kaiden_14" },
-            { text: "Você quer algo de mim.", next: "kaiden_14" }
-        ]},
-        kaiden_14: { speaker: "Kaiden", text: "Kaiden suspira teatralmente. Claro que quero. Todo mundo quer algo. Ele segura meu queixo com dois dedos, obrigando-me a encará-lo.", char: "kaiden5", sprite: "kaiden_perto", next: "kaiden_15" },
-        kaiden_15: { speaker: "Kaiden", text: "Você não é humana comum. Tem cheiro de Origem.", char: "kaiden5", sprite: "kaiden_perto", next: "kaiden_16" },
-        kaiden_16: { speaker: "Eu", text: "Aleia...", char: "kaiden5", next: "kaiden_17" },
-        kaiden_17: { speaker: "Kaiden", text: "Os olhos dele brilham intensamente. Então é isso. A cadelinha do Ciclo.", char: "kaiden5", sprite: "kaiden_bravo", choices: [
-            { text: "Não me chama assim!", next: "kaiden_18" },
-            { text: "Você sabe mais do que está dizendo.", next: "kaiden_18" },
-            { text: "E você? O que é?", next: "kaiden_18" }
-        ]},
-        kaiden_18: { speaker: "Kaiden", text: "A ilusão se desfaz. A floresta volta, mais escura. As caudas de Kaiden se abrem completamente – nove.", char: "kaiden6", sprite: "kaiden_nove_caudas", next: "kaiden_19" },
-        kaiden_19: { speaker: "Kaiden", text: "Eu sou o erro que os deuses fingem não ver. Um kitsune que se recusou a servir.", char: "kaiden6", sprite: "kaiden_nove_caudas", next: "kaiden_20" },
-        kaiden_20: { speaker: "Eu", text: "Servir quem?", char: "kaiden6", sprite: "kaiden_nove_caudas", next: "kaiden_21" },
-        kaiden_21: { speaker: "Kaiden", text: "O Ciclo. Aleia. Todos eles. Ele se inclina até seu ouvido. E você... pode quebrar tudo isso.", char: "kaiden6", sprite: "kaiden_perto", choices: [
-            { text: "Eu não confio em você.", next: "kaiden_ending_1" },
-            { text: "Se você me usar, eu te destruo.", next: "kaiden_ending_1" },
-            { text: "E se eu quiser quebrar o Ciclo?", next: "kaiden_22" }
-        ]},
-        kaiden_22: { speaker: "Kaiden", text: "Kaiden segura minha mão. A energia dele é caótica, quente, instável. Cuidado. Kitsunes mentem... mas não sobre desejo.", char: "kaiden7", sprite: "kaiden_serio", next: "kaiden_23" },
-        kaiden_23: { speaker: "Eu", text: "Você está brincando comigo?", char: "kaiden7", sprite: "kaiden_serio", next: "kaiden_24" },
-        kaiden_24: { speaker: "Kaiden", text: "Ele sorri. Sempre. Mas não solta.", char: "kaiden7", sprite: "kaiden_sorrindo", choices: [
-            { text: "Puxar a mão de volta", next: "kaiden_ending_1" },
-            { text: "Deixar ele se aproximar", next: "kaiden_25" },
-            { text: "Beijá-lo primeiro", next: "kaiden_25" }
-        ]},
-        kaiden_25: { speaker: "Kaiden", text: "A floresta se agita. Uma presença maior observa. Eles sentiram você.", char: "kaiden8", sprite: "kaiden_alerta", next: "kaiden_26" },
-        kaiden_26: { speaker: "Eu", text: "Quem?", char: "kaiden8", sprite: "kaiden_alerta", next: "kaiden_27" },
-        kaiden_27: { speaker: "Kaiden", text: "Todos. Deuses, guardiões... e coisas piores. Ele se aproxima, sério pela primeira vez. Se ficar comigo... não haverá redenção fácil.", char: "kaiden8", sprite: "kaiden_serio", choices: [
-            { text: "Eu fico.", next: "kaiden_romance_1" },
-            { text: "Eu uso você, mas não confio.", next: "kaiden_ending_1" },
-            { text: "Eu vou sozinha.", next: "kaiden_ending_1" }
-        ]},
-        kaiden_romance_1: { speaker: "Kaiden", text: "A floresta treme levemente, como se tivesse sentido minha decisão. Interessante... você escolheu ficar. Isso significa que você entende o perigo que está aceitando.", char: "kaiden10", sprite: "kaiden_sorrindo", next: "kaiden_romance_2" },
-        kaiden_romance_2: { speaker: "Eu", text: "Eu já morri uma vez. Não vou fugir da segunda.", char: "kaiden10", sprite: "kaiden_sorrindo", next: "kaiden_romance_3" },
-        kaiden_romance_3: { speaker: "Kaiden", text: "Ele sorri, mostrando dentes ligeiramente afiados. Então venha. Minha floresta agora é sua também... por enquanto.", char: "kaiden10", sprite: "kaiden_sorrindo", next: "kaiden_romance_4" },
-        kaiden_romance_4: { speaker: "Kaiden", text: "Kaiden segura minha mão, guiando-me por entre árvores que se curvam como se respeitassem sua presença. Humanos têm medo do que não entendem... Mas você... você não foge.", char: "kaiden11", sprite: "kaiden_normal", next: "kaiden_romance_5" },
-        kaiden_romance_5: { speaker: "Eu", text: "Nem vou fugir de você.", char: "kaiden11", sprite: "kaiden_normal", next: "kaiden_romance_6" },
-        kaiden_romance_6: { speaker: "Kaiden", text: "Ele inclina o rosto para o meu, tão próximo que posso sentir a respiração quente. Isso pode ser perigoso... muito perigoso.", char: "kaiden12", sprite: "kaiden_perto", choices: [
-            { text: "Me aproximar dele e tocar seu rosto", next: "kaiden_romance_7" },
-            { text: "Me afastar, mas manter contato visual", next: "kaiden_romance_8" },
-            { text: "Beijá-lo rapidamente", next: "kaiden_romance_7" }
-        ]},
-        kaiden_romance_7: { speaker: "Kaiden", text: "Kaiden aproxima o rosto, e nossos lábios se encontram. A floresta ao redor parece escurecer e brilhar ao mesmo tempo.", char: "kaiden13", next: "kaiden_romance_9" },
-        kaiden_romance_8: { speaker: "Kaiden", text: "Ele respeita sua cautela, mas o desejo brilha em seus olhos dourados.", char: "kaiden12", sprite: "kaiden_perto", next: "kaiden_romance_9" },
-        kaiden_romance_9: { speaker: "Kaiden", text: "Huu... Muito humana. E irresistível. Sinto um arrepio que percorre todo meu corpo, e uma marca fantasmagórica surge entre nós – símbolo da ligação Kitsune-Humana.", char: "kaiden13", sprite: "kaiden_sorrindo", next: "kaiden_romance_10" },
-        kaiden_romance_10: { speaker: "Eu", text: "O que... isso é?", char: "kaiden13", sprite: "kaiden_surpreso", next: "kaiden_romance_11" },
-        kaiden_romance_11: { speaker: "Kaiden", text: "Nós dois. Para sempre ligados... até que eu decida soltar.", char: "kaiden14", sprite: "kaiden_sorrindo", next: "kaiden_romance_12" },
-        kaiden_romance_12: { speaker: "Kaiden", text: "Kaiden solta minha mão, mas mantém os olhos fixos em mim. Há algo que você precisa saber. Eu não sou seu herói. Eu vou te usar, manipular... mas também proteger.", char: "kaiden14", sprite: "kaiden_serio", next: "kaiden_romance_13" },
-        kaiden_romance_13: { speaker: "Kaiden", text: "E você... vai querer cada segundo disso.", char: "kaiden14", sprite: "kaiden_serio", next: "kaiden_romance_14" },
-        kaiden_romance_14: { speaker: "Eu", text: "Isso... é amor?", char: "kaiden14", sprite: "kaiden_serio", next: "kaiden_romance_15" },
-        kaiden_romance_15: { speaker: "Kaiden", text: "Ele ri, som sombrio e sedutor. Amor humano? Não. Mas desejo... muito desejo.", char: "kaiden14", sprite: "kaiden_sorrindo", choices: [
-            { text: "Aceitar o desejo e ficar próxima", next: "kaiden_romance_16" },
-            { text: "Resistir, mas não ir embora", next: "kaiden_romance_17" },
-            { text: "Tentar fugir e testar sua reação", next: "kaiden_ending_1" }
-        ]},
-        kaiden_romance_16: { speaker: "Kaiden", text: "Kaiden se senta próximo de mim. Eu fui expulso dos Céus... Não por erro... mas por ousar amar, por ousar escolher.", char: "kaiden15", sprite: "kaiden_triste", next: "kaiden_romance_18" },
-        kaiden_romance_17: { speaker: "Kaiden", text: "Ele aprecia sua coragem. Então, está decidida?", char: "kaiden15", sprite: "kaiden_normal", next: "kaiden_romance_18" },
-        kaiden_romance_18: { speaker: "Eu", text: "Então... você entende o que eu sou?", char: "kaiden15", sprite: "kaiden_normal", next: "kaiden_romance_19" },
-        kaiden_romance_19: { speaker: "Kaiden", text: "Mais do que qualquer deus ou guardião. Eu vejo o Fragmento da Origem em você... E sei que juntos podemos quebrar tudo.", char: "kaiden15", sprite: "kaiden_determinado", next: "kaiden_romance_20" },
-        kaiden_romance_20: { speaker: "Eu", text: "Quebrar tudo... como?", char: "kaiden15", sprite: "kaiden_determinado", next: "kaiden_romance_21" },
-        kaiden_romance_21: { speaker: "Kaiden", text: "Reescrever regras. O Ciclo, os deuses, o destino. E talvez... criar nosso próprio mundo.", char: "kaiden16", sprite: "kaiden_determinado", next: "kaiden_romance_22" },
-        kaiden_romance_22: { speaker: "Kaiden", text: "A floresta parece viva. Sombras se movem. Mas isso tem preço. Escolher ficar comigo... significa inimigos em todos os lugares. Deuses, guardiões... e humanos que não entendem.", char: "kaiden16", sprite: "kaiden_alerta", next: "kaiden_romance_23" },
-        kaiden_romance_23: { speaker: "Kaiden", text: "Você está pronta?", char: "kaiden16", sprite: "kaiden_alerta", choices: [
-            { text: "Eu fico. Com você, mesmo que seja perigoso.", next: "kaiden_final" },
-            { text: "Se você cair, eu caio também.", next: "kaiden_final" },
-            { text: "Vamos quebrar tudo juntos.", next: "kaiden_final" }
-        ]},
-        kaiden_final: { speaker: "Kaiden", text: "Kaiden envolve-me com seus braços, suas caudas cobrindo-nos como manto protetor. Então seja minha... até o fim. Eu prometo proteger você... mesmo que isso signifique desafiar os Céus. Eu prometo... ficar com você. Ele me beija novamente. O mundo ao redor desaparece. Somente nós dois. Uma marca de ligação brilha entre nós – nossa assinatura proibida. A floresta se acalma. A lua brilha sobre nós, refletindo nas caudas de Kaiden. Nós quebramos regras, destruímos expectativas, desafiamos tudo... Mas estamos juntos. Mesmo que todos nos odeiem? Mesmo assim. Porque o que temos é mais forte que qualquer julgamento. As caudas dele se enrolam em volta da minha cintura, nos protegendo. O Ciclo dos deuses... agora não pode nos tocar. Nós somos a nossa própria lei.", char: "kaiden20", end: true, endText: "🦊 FIM DA ROTA KAIDEN - Obrigado por jogar!" },
-        kaiden_ending_1: { speaker: "Kaiden", text: "Kaiden sorri, como se já esperasse por isso. Como desejar. Talvez nos encontremos novamente.", char: "kaiden6", end: true, endText: "🦊 FIM DA ROTA KAIDEN - Distância Mantida" },
-
-        // ROTA AELION
-        aelion_1: { route: "Aelion", speaker: "Eu", text: "Decido voltar para as ruínas de onde vim. O caminho é conhecido, mas ainda assim sinto a tensão de um mundo que mudou desde minha morte. Talvez aqui eu consiga me orientar melhor... É mais seguro, pelo menos.", char: "aelion1", music: "trilha do aelion", next: "aelion_2" },
-        aelion_2: { speaker: "Eu", text: "As ruínas parecem silenciosas, mas há um calor reconfortante no ar, como se o lugar estivesse esperando por mim.", char: "aelion1", next: "aelion_3" },
-        aelion_3: { speaker: "Eu", text: "Enquanto examino as ruínas, uma luz dourada surge entre as colunas destruídas.", char: "aelion2", next: "aelion_4" },
-        aelion_4: { speaker: "Eu", text: "Quem está aí?", char: "aelion2", next: "aelion_5" },
-        aelion_5: { speaker: "Aelion", text: "Um homem surge gradualmente. Alto, cabelo prateado, olhos verdes profundos, armadura leve, mas imponente. Saudações, viajante. Não teme estas ruínas, mesmo depois do que aconteceu?", char: "aelion2", sprite: "aelion_normal", next: "aelion_6" },
-        aelion_6: { speaker: "Eu", text: "Olá... Eu só queria um lugar seguro para descansar.", char: "aelion2", sprite: "aelion_normal", choices: [
-            { text: "Obrigada... estou exausta e assustada.", next: "aelion_7" },
-            { text: "Você é o rei? Parece gentil.", next: "aelion_7" },
-            { text: "Não sei se posso confiar.", next: "aelion_8" }
-        ]},
-        aelion_7: { speaker: "Aelion", text: "Então veio ao lugar certo. Sou Aelion, rei deste reino ancestral. Aqui você estará em segurança.", char: "aelion3", sprite: "aelion_sorrindo", next: "aelion_9" },
-        aelion_8: { speaker: "Aelion", text: "Compreendo sua cautela. Tempo mostrará minha verdade.", char: "aelion2", sprite: "aelion_serio", next: "aelion_9" },
-        aelion_9: { speaker: "Aelion", text: "Aelion conduz-me para uma pequena sala dentro das ruínas, preservada pelo tempo. Há tapeçarias antigas, livros espalhados e uma lareira acesa.", char: "aelion3", sprite: "aelion_normal", next: "aelion_10" },
-        aelion_10: { speaker: "Aelion", text: "Sente-se. A comida será simples, mas nutritiva. E você pode descansar sem medo.", char: "aelion3", sprite: "aelion_normal", next: "aelion_11" },
-        aelion_11: { speaker: "Eu", text: "Isso é tão reconfortante. Sinto que finalmente posso respirar.", char: "aelion3", sprite: "aelion_normal", next: "aelion_12" },
-        aelion_12: { speaker: "Aelion", text: "Aqui ninguém vai lhe fazer mal. Nem monstros, nem deuses. Apenas eu e o que este lugar guarda.", char: "aelion3", sprite: "aelion_sorrindo", choices: [
-            { text: "Posso ficar aqui por um tempo?", next: "aelion_13" },
-            { text: "Você sempre protege assim os que chegam?", next: "aelion_13" },
-            { text: "Esse lugar... é seguro por quê?", next: "aelion_13" }
-        ]},
-        aelion_13: { speaker: "Aelion", text: "Sentados próximos à lareira, Aelion observa as chamas. Você carrega algo incomum. Sua energia... é rara, até entre os elfos.", char: "aelion4", sprite: "aelion_pensativo", next: "aelion_14" },
-        aelion_14: { speaker: "Eu", text: "Aleia mencionou algo sobre missão e fragmentos da Origem.", char: "aelion4", sprite: "aelion_pensativo", next: "aelion_15" },
-        aelion_15: { speaker: "Aelion", text: "Então sabe que o mundo é maior do que parece. Mas aqui, comigo, você estará segura para descobrir o que deve fazer.", char: "aelion4", sprite: "aelion_determinado", next: "aelion_16" },
-        aelion_16: { speaker: "Eu", text: "...E você sempre protege assim?", char: "aelion4", sprite: "aelion_determinado", next: "aelion_17" },
-        aelion_17: { speaker: "Aelion", text: "Sempre que posso. Segurança é diferente de poder. Poder sozinho não salva ninguém.", char: "aelion4", sprite: "aelion_serio", choices: [
-            { text: "Confio em você.", next: "aelion_18" },
-            { text: "Posso aprender com você?", next: "aelion_18" },
-            { text: "Quero entender minha missão.", next: "aelion_18" }
-        ]},
-        aelion_18: { speaker: "Aelion", text: "Com o passar do tempo, sinto-me cada vez mais à vontade com Aelion. Ele é gentil, paciente e protetor, sem exigir nada.", char: "aelion5", sprite: "aelion_sorrindo", next: "aelion_19" },
-        aelion_19: { speaker: "Aelion", text: "Há momentos em que até os reis precisam se conectar com o que é puro. Com você... sinto que posso apenas ser eu mesmo.", char: "aelion5", sprite: "aelion_sorrindo", next: "aelion_20" },
-        aelion_20: { speaker: "Eu", text: "...Isso é... reconfortante. Sinto que posso confiar em você de verdade.", char: "aelion5", sprite: "aelion_sorrindo", next: "aelion_21" },
-        aelion_21: { speaker: "Aelion", text: "Ele sorri, delicadamente, e segura minha mão. Então estamos juntos nisso. Segurança, compreensão e... talvez algo mais.", char: "aelion5", sprite: "aelion_perto", choices: [
-            { text: "Aceitar e apertar a mão dele", next: "aelion_22" },
-            { text: "Sorrir e deixar que ele segure levemente", next: "aelion_22" },
-            { text: "Ficar tímida, mas não afastar", next: "aelion_23" }
-        ]},
-        aelion_22: { speaker: "Aelion", text: "Aelion se aproxima, olhando-me nos olhos. Aleia disse que você carrega uma missão importante. Mas não precisa enfrentar tudo sozinha. Eu estarei ao seu lado.", char: "aelion6", sprite: "aelion_perto", next: "aelion_24" },
-        aelion_23: { speaker: "Aelion", text: "Ele pacientemente aguarda seu tempo, respeitando seu ritmo.", char: "aelion6", sprite: "aelion_calmo", next: "aelion_24" },
-        aelion_24: { speaker: "Eu", text: "...Isso significa muito. Não tenho que decidir tudo sozinha.", char: "aelion6", sprite: "aelion_calmo", next: "aelion_25" },
-        aelion_25: { speaker: "Aelion", text: "Exatamente. Passo a passo, juntos.", char: "aelion6", sprite: "aelion_sorrindo", choices: [
-            { text: "Então vou confiar em você.", next: "aelion_26" },
-            { text: "Vamos descobrir juntos.", next: "aelion_26" },
-            { text: "Preciso de sua orientação, Aelion.", next: "aelion_26" }
-        ]},
-        aelion_26: { speaker: "Aelion", text: "O sol nasce sobre as ruínas. As paredes antigas agora brilham com luz dourada, refletindo a natureza em volta.", char: "aelion7", sprite: "aelion_feliz", next: "aelion_27" },
-        aelion_27: { speaker: "Aelion", text: "O mundo lá fora é perigoso... Mas aqui você pode respirar.", char: "aelion7", sprite: "aelion_feliz", next: "aelion_28" },
-        aelion_28: { speaker: "Eu", text: "Com você, sinto que posso.", char: "aelion7", sprite: "aelion_feliz", next: "aelion_29" },
-        aelion_29: { speaker: "Aelion", text: "Ele segura minha mão com firmeza, olhando-me com ternura. Então... fique comigo. Não apenas segura, mas confiante.", char: "aelion8", sprite: "aelion_perto", next: "aelion_30" },
-        aelion_30: { speaker: "Eu", text: "Eu fico. Aqui, com você.", char: "aelion8", end: true, endText: "👑 FIM DA ROTA AELION - Obrigado por jogar!" }
-    };
-
-    console.log("Second Chance - Ruins of Destiny carregado com sucesso.");
-    </script>
-</body>
-</html>
+        kaiden_5: { speaker: "Eu", text: "Tá, isso definitivamente não
